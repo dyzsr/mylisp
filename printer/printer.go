@@ -23,7 +23,7 @@ func (p *Printer) Print(e ast.Expr) {
 		fmt.Printf("$ %v\n", v.Value)
 	case *runtime.NumValue:
 		fmt.Printf("$ %v\n", v.Value)
-	case *runtime.BasicProc:
+	case *runtime.BuiltinProc:
 		fmt.Printf("$ <procedure %s>", v.Name)
 	case *runtime.ProcValue:
 		fmt.Printf("$ <procedure %s>", v.Name)
