@@ -9,7 +9,7 @@ type (
 		Value bool
 	}
 
-	NumLit struct {
+	IntLit struct {
 		Value int64
 	}
 
@@ -43,7 +43,7 @@ type (
 )
 
 func (e *BoolLit) Expr()    {}
-func (e *NumLit) Expr()     {}
+func (e *IntLit) Expr()     {}
 func (e *Ident) Expr()      {}
 func (e *ListExpr) Expr()   {}
 func (e *DefineExpr) Expr() {}

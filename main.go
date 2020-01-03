@@ -1,13 +1,16 @@
 package main
 
 import (
+	"mylisp/lexer"
 	"mylisp/parser"
 	"mylisp/printer"
 	"mylisp/runtime"
+	"os"
 )
 
 func main() {
-	par := parser.NewParser()
+	lex := lexer.NewLexer(os.Stdin)
+	par := parser.NewParser(lex)
 	env := runtime.NewRootEnv()
 	prt := printer.NewPrinter()
 	eprt := printer.NewErrorPrinter()

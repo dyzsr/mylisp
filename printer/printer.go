@@ -21,7 +21,7 @@ func (p *Printer) Print(e ast.Expr) {
 	switch v := e.(type) {
 	case *runtime.BoolValue:
 		fmt.Printf("$ %v\n", v.Value)
-	case *runtime.NumValue:
+	case *runtime.IntValue:
 		fmt.Printf("$ %v\n", v.Value)
 	case *runtime.BuiltinProc:
 		fmt.Printf("$ <procedure %s>", v.Name)

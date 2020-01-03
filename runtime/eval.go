@@ -12,9 +12,9 @@ func (e *EvalEnv) Eval(inputExpr ast.Expr) (ast.Expr, error) {
 	}
 
 	switch expr := inputExpr.(type) {
-	case *ast.BoolLit:
+	case *BoolValue:
 		return expr, nil
-	case *ast.NumLit:
+	case *IntValue:
 		return expr, nil
 	case *BuiltinProc:
 		return expr, nil

@@ -7,7 +7,7 @@ import (
 
 type BoolValue = ast.BoolLit
 
-type NumValue = ast.NumLit
+type IntValue = ast.IntLit
 
 type BuiltinProc struct {
 	Name string
@@ -36,12 +36,12 @@ func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value as
 	}
 
 	// check operands types & store the operands
-	var nums []*NumValue
+	var nums []*IntValue
 	var booleans []*BoolValue
 	switch opName {
 	case "+", "-", "*", "/", "=", "<", "<=", ">", ">=":
 		for _, operand := range operands {
-			num, ok := operand.(*NumValue)
+			num, ok := operand.(*IntValue)
 			if !ok {
 				return nil, fmt.Errorf("operands for procedure '%s' should be numbers", opName)
 			}
@@ -59,61 +59,61 @@ func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value as
 
 	switch opName {
 	case "+":
-		return addNum(nums...), nil
+		return addInt(nums...), nil
 	case "-":
-		return subNum(nums...), nil
+		return subInt(nums...), nil
 	case "*":
-		return mulNum(nums...), nil
+		return mulInt(nums...), nil
 	case "/":
-		return divNum(nums...), nil
+		return divInt(nums...), nil
 	}
 	return nil, fmt.Errorf("undefined procedure: %s", opName)
 }
 
-func addNum(nums ...*NumValue) *NumValue {
+func addInt(nums ...*IntValue) *IntValue {
 	var result int64
 	for _, num := range nums {
 		result += num.Value
 	}
-	return &NumValue{Value: result}
+	return &IntValue{Value: result}
 }
 
-func subNum(nums ...*NumValue) *NumValue {
+func subInt(nums ...*IntValue) *IntValue {
 	if len(nums) == 0 {
 		panic("at least one operand for procedure '-' is required")
 	}
 	minuend := nums[0]
 	if len(nums) == 1 {
-		return &NumValue{Value: -minuend.Value}
+		return &IntValue{Value: -minuend.Value}
 	}
 
 	result := minuend.Value
 	for _, num := range nums[1:] {
 		result -= num.Value
 	}
-	return &NumValue{Value: result}
+	return &IntValue{Value: result}
 }
 
-func mulNum(nums ...*NumValue) *NumValue {
+func mulInt(nums ...*IntValue) *IntValue {
 	var result int64 = 1
 	for _, num := range nums {
 		result *= num.Value
 	}
-	return &NumValue{Value: result}
+	return &IntValue{Value: result}
 }
 
-func divNum(nums ...*NumValue) *NumValue {
+func divInt(nums ...*IntValue) *IntValue {
 	if len(nums) == 0 {
 		panic("at least one operand for procedure '/' is required")
 	}
 	dividend := nums[0]
 	if len(nums) == 1 {
-		return &NumValue{Value: 1 / dividend.Value}
+		return &IntValue{Value: 1 / dividend.Value}
 	}
 
 	result := dividend.Value
 	for _, num := range nums[1:] {
 		result /= num.Value
 	}
-	return &NumValue{Value: result}
+	return &IntValue{Value: result}
 }

@@ -16,55 +16,55 @@ func Test_evalBasic(t *testing.T) {
 		{
 			"+",
 			nil,
-			&NumValue{Value: 0},
+			&IntValue{Value: 0},
 		},
 		{
 			"+",
 			[]ast.Expr{
-				&NumValue{Value: 99},
-				&NumValue{Value: 88},
-				&NumValue{Value: 77},
+				&IntValue{Value: 99},
+				&IntValue{Value: 88},
+				&IntValue{Value: 77},
 			},
-			&NumValue{Value: 264},
+			&IntValue{Value: 264},
 		},
 		{
 			"-",
 			[]ast.Expr{
-				&NumValue{Value: -200},
-				&NumValue{Value: -100},
-				&NumValue{Value: 300},
+				&IntValue{Value: -200},
+				&IntValue{Value: -100},
+				&IntValue{Value: 300},
 			},
-			&NumValue{Value: -400},
+			&IntValue{Value: -400},
 		},
 		{
 			"-",
 			[]ast.Expr{
-				&NumValue{Value: 10},
+				&IntValue{Value: 10},
 			},
-			&NumValue{Value: -10},
+			&IntValue{Value: -10},
 		},
 		{
 			"*",
 			nil,
-			&NumValue{Value: 1},
+			&IntValue{Value: 1},
 		},
 		{
 			"*",
 			[]ast.Expr{
-				&NumValue{Value: 64},
-				&NumValue{Value: 16},
-				&NumValue{Value: 2},
+				&IntValue{Value: 64},
+				&IntValue{Value: 16},
+				&IntValue{Value: 2},
 			},
-			&NumValue{Value: 2048},
+			&IntValue{Value: 2048},
 		},
 		{
 			"/",
 			[]ast.Expr{
-				&NumValue{Value: -64},
-				&NumValue{Value: 16},
-				&NumValue{Value: 2},
+				&IntValue{Value: -64},
+				&IntValue{Value: 16},
+				&IntValue{Value: 2},
 			},
-			&NumValue{Value: -2},
+			&IntValue{Value: -2},
 		},
 	}
 
