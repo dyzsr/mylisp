@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"errors"
 	"mylisp/ast"
 )
 
@@ -11,6 +12,9 @@ type ProcValue struct {
 }
 
 func (e *EvalEnv) evalProc(proc *ProcValue, operands ...ast.Expr) (ast.Expr, error) {
+	if len(proc.Args) != len(operands) {
+		return nil, errors.New("operands and arguments numbers did not match")
+	}
 	env := NewEvalEnv(proc.env)
 	for i, arg := range proc.Args {
 		env.insert(arg.Name, operands[i])

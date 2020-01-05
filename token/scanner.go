@@ -1,4 +1,4 @@
-package lexer
+package token
 
 import (
 	"bufio"
@@ -56,7 +56,16 @@ func (sc *scanner) peek() (rune, bool) {
 }
 
 func (sc *scanner) load() {
-	if sc.eof || !sc.rd.Scan() && sc.rd.Err() == nil {
+	// fmt.Println("load: start")
+	// defer fmt.Println("load: end")
+	if sc.eof {
+		sc.offset = 0
+		sc.size = 0
+		sc.buf = nil
+		return
+	}
+
+	if !sc.rd.Scan() && sc.rd.Err() == nil {
 		sc.offset = 0
 		sc.size = 0
 		sc.buf = nil
@@ -64,13 +73,9 @@ func (sc *scanner) load() {
 		return
 	}
 	// not EOF
-	if sc.line > 1 {
-		sc.buf = []rune("\n" + sc.rd.Text())
-	} else {
-		sc.buf = []rune(sc.rd.Text())
-	}
+	sc.line++
+	sc.buf = append([]rune(sc.rd.Text()), '\n')
 	sc.size = len(sc.buf)
 	sc.offset = 0
 	sc.char = sc.buf[0]
-	sc.line++
 }

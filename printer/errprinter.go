@@ -12,5 +12,5 @@ func NewErrorPrinter() *ErrorPrinter {
 }
 
 func (p *ErrorPrinter) Print(err error) {
-	fmt.Fprintf(os.Stderr, "eval error: %s", err)
+	fmt.Fprintf(os.Stderr, "! eval error: %s\n", err)
 }

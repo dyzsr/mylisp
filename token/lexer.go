@@ -1,14 +1,16 @@
-package lexer
+package token
 
 import (
 	"io"
 	"mylisp/ast"
-	"mylisp/token"
 	"unicode"
 )
 
 type Lexer struct {
-	sc   *scanner
+	sc *scanner
+
+	eof  bool
+	tok  *Token
 	node ast.Expr
 }
 
@@ -18,18 +20,47 @@ func NewLexer(reader io.Reader) *Lexer {
 	}
 }
 
-func (l *Lexer) NextToken() token.Token {
-	l.skipWhitespace()
-	if !l.sc.notEof() {
-		return token.EOF
+func (l *Lexer) LookupOne() (Token, ast.Expr) {
+	// fmt.Println("Lexer LookupOne: start")
+	// defer fmt.Println("Lexer LookupOne: end")
+	if l.tok == nil {
+		if ok := l.advance(); !ok {
+			return EOF, nil
+		}
+	}
+	return *l.tok, l.node
+}
+
+func (l *Lexer) Next() (Token, ast.Expr) {
+	// fmt.Println("Lexer Next: start")
+	// defer fmt.Println("Lexer Next: end")
+	if l.tok == nil {
+		if ok := l.advance(); !ok {
+			return EOF, nil
+		}
+	}
+	tok := *l.tok
+	l.tok = nil
+	return tok, l.node
+}
+
+func (l *Lexer) advance() bool {
+	if l.eof {
+		return false
 	}
 
-	var tok token.Token
+	l.skipWhitespace()
+	if !l.sc.notEof() {
+		l.eof = true
+		return false
+	}
+
+	var tok Token
 	switch ch, _ := l.sc.get(); ch {
 	case '(':
-		tok = token.LPAREN
+		tok = LPAREN
 	case ')':
-		tok = token.RPAREN
+		tok = RPAREN
 	default:
 		if unicode.IsNumber(ch) {
 			tok = l.readNumber(ch)
@@ -39,11 +70,11 @@ func (l *Lexer) NextToken() token.Token {
 			tok = l.readOther(ch)
 		}
 	}
-
-	return tok
+	l.tok = &tok
+	return true
 }
 
-func (l *Lexer) readNumber(first rune) token.Token {
+func (l *Lexer) readNumber(first rune) Token {
 	var sign bool
 	var value int64
 
@@ -66,10 +97,10 @@ func (l *Lexer) readNumber(first rune) token.Token {
 		value = -value
 	}
 	l.node = &ast.IntLit{Value: value}
-	return token.INTEGER
+	return INTEGER
 }
 
-func (l *Lexer) readIdent(first rune) token.Token {
+func (l *Lexer) readIdent(first rune) Token {
 	value := []rune{first}
 	for ; l.sc.notEof(); l.sc.get() {
 		ch, _ := l.sc.peek()
@@ -82,23 +113,17 @@ func (l *Lexer) readIdent(first rune) token.Token {
 	ident := string(value)
 	tok := l.lookup(ident)
 	switch tok {
-	case token.TRUE:
+	case TRUE:
 		l.node = &ast.BoolLit{Value: true}
-	case token.FALSE:
+	case FALSE:
 		l.node = &ast.BoolLit{Value: false}
-	case token.AND:
-		l.node = &ast.Ident{Name: "and"}
-	case token.OR:
-		l.node = &ast.Ident{Name: "or"}
-	case token.NOT:
-		l.node = &ast.Ident{Name: "not"}
 	default:
 		l.node = &ast.Ident{Name: ident}
 	}
 	return tok
 }
 
-func (l *Lexer) readOther(first rune) token.Token {
+func (l *Lexer) readOther(first rune) Token {
 	switch first {
 	case '+', '-':
 		ch, _ := l.sc.peek()
@@ -109,76 +134,80 @@ func (l *Lexer) readOther(first rune) token.Token {
 
 	ch, ok := l.sc.peek()
 
-	var tok token.Token
+	var tok Token
 	switch first {
 	case '+':
-		tok = token.PLUS
+		tok = PLUS
 		l.node = &ast.Ident{Name: "+"}
 	case '-':
-		tok = token.MINUS
+		tok = MINUS
 		l.node = &ast.Ident{Name: "-"}
 	case '*':
-		tok = token.ASTER
+		tok = ASTER
 		l.node = &ast.Ident{Name: "*"}
 	case '/':
-		tok = token.SLASH
+		tok = SLASH
 		l.node = &ast.Ident{Name: "/"}
+	case '%':
+		tok = PERCENT
+		l.node = &ast.Ident{Name: "%"}
 	case '=':
-		tok = token.EQ
+		tok = EQ
 		l.node = &ast.Ident{Name: "="}
-	case '!':
-		if !ok || ch != '=' {
-			tok = token.ILLEGAL
-		} else {
-			tok = token.NE
-			l.node = &ast.Ident{Name: "!="}
-			l.sc.get()
-		}
 	case '<':
 		if !ok {
-			tok = token.ILLEGAL
+			tok = ILLEGAL
 		} else if ch != '=' {
-			tok = token.LT
+			tok = LT
 			l.node = &ast.Ident{Name: "<"}
 		} else {
-			tok = token.LTE
+			tok = LTE
 			l.node = &ast.Ident{Name: "<="}
 			l.sc.get()
 		}
 	case '>':
 		if !ok {
-			tok = token.ILLEGAL
+			tok = ILLEGAL
 		} else if ch != '=' {
-			tok = token.GT
+			tok = GT
 			l.node = &ast.Ident{Name: ">"}
 		} else {
-			tok = token.GTE
+			tok = GTE
 			l.node = &ast.Ident{Name: ">="}
 			l.sc.get()
 		}
+	case '&':
+		if !ok || ch != '&' {
+			tok = ILLEGAL
+		} else {
+			tok = AND
+			l.node = &ast.Ident{Name: "&&"}
+			l.sc.get()
+		}
+	case '|':
+		if !ok || ch != '|' {
+			tok = ILLEGAL
+		} else {
+			tok = OR
+			l.node = &ast.Ident{Name: "||"}
+			l.sc.get()
+		}
+	case '!':
+		tok = NOT
+		l.node = &ast.Ident{Name: "!"}
 	}
 
 	return tok
 }
 
-func (l *Lexer) lookup(ident string) token.Token {
+func (l *Lexer) lookup(ident string) Token {
 	switch ident {
 	case "true":
-		return token.TRUE
+		return TRUE
 	case "false":
-		return token.FALSE
-	case "define":
-		return token.DEFINE
-	case "lambda":
-		return token.LAMBDA
-	case "and":
-		return token.AND
-	case "or":
-		return token.OR
-	case "not":
-		return token.NOT
+		return FALSE
 	default:
-		return token.IDENT
+		return IDENT
 	}
 }
 

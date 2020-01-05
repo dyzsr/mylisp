@@ -1,4 +1,4 @@
-package lexer
+package token
 
 import (
 	"strings"
@@ -15,9 +15,8 @@ func makeScannerTest(testData []testScanner, f func(string) string) func(*testin
 		for _, test := range testData {
 			result := f(test.input)
 
-			t.Logf("input: '%s', output: '%s'", test.input, result)
 			if result != test.result {
-				t.Errorf("expect: '%s', output: '%s'", test.result, result)
+				t.Errorf("input: '%s', expect: '%s', output: '%s'", test.input, test.result, result)
 			}
 		}
 	}
@@ -33,7 +32,7 @@ var (
 	dataGetPeek = []testScanner{
 		{
 			input:  "(define f\n\n(lambda\n (x) x))",
-			result: "((ddeeffiinnee  ff\n\n\n\n((llaammbbddaa\n\n  ((xx))  xx))))",
+			result: "((ddeeffiinnee  ff\n\n\n\n((llaammbbddaa\n\n  ((xx))  xx))))\n\n",
 		},
 	}
 
@@ -41,7 +40,7 @@ var (
 		{
 			input: `(define f
 (lambda (x) x))`,
-			result: "(define f\n(lambda (x) x))",
+			result: "(define f\n(lambda (x) x))\n",
 		},
 	}
 )

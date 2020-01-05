@@ -5,15 +5,37 @@ import (
 	"mylisp/ast"
 )
 
-type BoolValue = ast.BoolLit
+type (
+	BoolValue bool
 
-type IntValue = ast.IntLit
+	IntValue int64
 
-type BuiltinProc struct {
-	Name string
-}
+	BuiltinProc struct {
+		Name string
+	}
+)
 
+func (e BoolValue) Expr()    {}
+func (e IntValue) Expr()     {}
 func (e *BuiltinProc) Expr() {}
+
+func initSymtab() map[string]ast.Expr {
+	return map[string]ast.Expr{
+		"+":  &BuiltinProc{Name: "+"},
+		"-":  &BuiltinProc{Name: "-"},
+		"*":  &BuiltinProc{Name: "*"},
+		"/":  &BuiltinProc{Name: "/"},
+		"%":  &BuiltinProc{Name: "%"},
+		"=":  &BuiltinProc{Name: "="},
+		"<":  &BuiltinProc{Name: "<"},
+		"<=": &BuiltinProc{Name: "<="},
+		">":  &BuiltinProc{Name: ">"},
+		">=": &BuiltinProc{Name: ">="},
+		"&&": &BuiltinProc{Name: "&&"},
+		"||": &BuiltinProc{Name: "||"},
+		"!":  &BuiltinProc{Name: "!"},
+	}
+}
 
 func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value ast.Expr, err error) {
 	defer func() {
@@ -29,27 +51,31 @@ func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value as
 		if len(operands) == 0 {
 			return nil, fmt.Errorf("at least one operand is required for procedure '%s'", opName)
 		}
-	case "not":
+	case "!":
 		if len(operands) != 1 {
-			return nil, fmt.Errorf("exactly one operand is required for procedure '%s'", opName)
+			return nil, fmt.Errorf("exactly 1 operand is required for procedure '%s'", opName)
+		}
+	case "%":
+		if len(operands) != 2 {
+			return nil, fmt.Errorf("exactly 2 operands are required for procedure '%s'", opName)
 		}
 	}
 
 	// check operands types & store the operands
-	var nums []*IntValue
-	var booleans []*BoolValue
+	var nums []IntValue
+	var booleans []BoolValue
 	switch opName {
-	case "+", "-", "*", "/", "=", "<", "<=", ">", ">=":
+	case "+", "-", "*", "/", "%", "=", "<", "<=", ">", ">=":
 		for _, operand := range operands {
-			num, ok := operand.(*IntValue)
+			num, ok := operand.(IntValue)
 			if !ok {
 				return nil, fmt.Errorf("operands for procedure '%s' should be numbers", opName)
 			}
 			nums = append(nums, num)
 		}
-	case "and", "or", "not":
+	case "&&", "||", "!":
 		for _, operand := range operands {
-			boolean, ok := operand.(*BoolValue)
+			boolean, ok := operand.(BoolValue)
 			if !ok {
 				return nil, fmt.Errorf("operands for procedure '%s' should be booleans", opName)
 			}
@@ -66,54 +92,151 @@ func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value as
 		return mulInt(nums...), nil
 	case "/":
 		return divInt(nums...), nil
+	case "%":
+		return modInt(nums...), nil
+	case "=":
+		return eqInt(nums...), nil
+	case "<":
+		return ltInt(nums...), nil
+	case "<=":
+		return lteInt(nums...), nil
+	case ">":
+		return gtInt(nums...), nil
+	case ">=":
+		return gteInt(nums...), nil
+	case "&&":
+		return andBool(booleans...), nil
+	case "||":
+		return orBool(booleans...), nil
+	case "!":
+		return notBool(booleans...), nil
 	}
 	return nil, fmt.Errorf("undefined procedure: %s", opName)
 }
 
-func addInt(nums ...*IntValue) *IntValue {
-	var result int64
+func addInt(nums ...IntValue) IntValue {
+	var result IntValue
 	for _, num := range nums {
-		result += num.Value
+		result += num
 	}
-	return &IntValue{Value: result}
+	return result
 }
 
-func subInt(nums ...*IntValue) *IntValue {
-	if len(nums) == 0 {
-		panic("at least one operand for procedure '-' is required")
-	}
+func subInt(nums ...IntValue) IntValue {
 	minuend := nums[0]
 	if len(nums) == 1 {
-		return &IntValue{Value: -minuend.Value}
+		return -minuend
 	}
 
-	result := minuend.Value
+	result := minuend
 	for _, num := range nums[1:] {
-		result -= num.Value
+		result -= num
 	}
-	return &IntValue{Value: result}
+	return result
 }
 
-func mulInt(nums ...*IntValue) *IntValue {
-	var result int64 = 1
+func mulInt(nums ...IntValue) IntValue {
+	var result IntValue = 1
 	for _, num := range nums {
-		result *= num.Value
+		result *= num
 	}
-	return &IntValue{Value: result}
+	return result
 }
 
-func divInt(nums ...*IntValue) *IntValue {
-	if len(nums) == 0 {
-		panic("at least one operand for procedure '/' is required")
-	}
+func divInt(nums ...IntValue) IntValue {
 	dividend := nums[0]
 	if len(nums) == 1 {
-		return &IntValue{Value: 1 / dividend.Value}
+		return 1 / dividend
 	}
 
-	result := dividend.Value
+	result := dividend
 	for _, num := range nums[1:] {
-		result /= num.Value
+		result /= num
 	}
-	return &IntValue{Value: result}
+	return result
+}
+
+func modInt(nums ...IntValue) IntValue {
+	result := nums[0] % nums[1]
+	return result
+}
+
+func eqInt(nums ...IntValue) BoolValue {
+	var result BoolValue = true
+	var last IntValue = nums[0]
+	for _, num := range nums[1:] {
+		if last != num {
+			result = false
+			break
+		}
+	}
+	return result
+}
+
+func ltInt(nums ...IntValue) BoolValue {
+	var result BoolValue = true
+	var last IntValue = nums[0]
+	for _, num := range nums[1:] {
+		if last >= num {
+			result = false
+			break
+		}
+	}
+	return result
+}
+
+func lteInt(nums ...IntValue) BoolValue {
+	var result BoolValue = true
+	var last IntValue = nums[0]
+	for _, num := range nums[1:] {
+		if last > num {
+			result = false
+			break
+		}
+	}
+	return result
+}
+
+func gtInt(nums ...IntValue) BoolValue {
+	var result BoolValue = true
+	var last IntValue = nums[0]
+	for _, num := range nums[1:] {
+		if last <= num {
+			result = false
+			break
+		}
+	}
+	return result
+}
+
+func gteInt(nums ...IntValue) BoolValue {
+	var result BoolValue = true
+	var last IntValue = nums[0]
+	for _, num := range nums[1:] {
+		if last < num {
+			result = false
+			break
+		}
+	}
+	return result
+}
+
+func andBool(booleans ...BoolValue) BoolValue {
+	var result BoolValue = true
+	for _, boolean := range booleans {
+		result = result && boolean
+	}
+	return result
+}
+
+func orBool(booleans ...BoolValue) BoolValue {
+	var result BoolValue = false
+	for _, boolean := range booleans {
+		result = result || boolean
+	}
+	return result
+}
+
+func notBool(booleans ...BoolValue) BoolValue {
+	return !booleans[0]
 }

@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"reflect"
 	"testing"
 
 	"mylisp/ast"
@@ -16,13 +17,12 @@ func makeTest(testData []testStruct) func(*testing.T) {
 		env := NewRootEnv()
 		for _, test := range testData {
 			result, err := env.Eval(test.input)
-			t.Logf("input: {%s}, output: {%s}", test.input, result)
 			if err != nil {
 				t.Error(err)
 				break
 			}
-			if !compare(result, test.result) {
-				t.Errorf("expect: {%s}, output: {%s}", test.result, result)
+			if !reflect.DeepEqual(result, test.result) {
+				t.Errorf("\ninput: '%s'\nexpect: '%s'\noutput: '%s'", test.input, test.result, result)
 			}
 		}
 	}
@@ -53,22 +53,22 @@ var (
 		},
 		{
 			input:  &ast.Ident{Name: "x"},
-			result: &ast.IntLit{Value: 32768},
+			result: IntValue(32768),
 		},
 		{
 			input:  &ast.Ident{Name: "y"},
-			result: &ast.IntLit{Value: 123},
+			result: IntValue(123),
 		},
 		{
 			input: &ast.DefineExpr{
 				Ident: &ast.Ident{Name: "x"},
-				Value: &ast.IntLit{Value: -32768},
+				Value: IntValue(-32768),
 			},
 			result: nil,
 		},
 		{
 			input:  &ast.Ident{Name: "x"},
-			result: &ast.IntLit{Value: -32768},
+			result: IntValue(-32768),
 		},
 	}
 
@@ -80,7 +80,7 @@ var (
 					&ast.IntLit{Value: 32767},
 					&ast.IntLit{Value: 32768},
 				}},
-			result: &ast.IntLit{Value: 65535},
+			result: IntValue(65535),
 		},
 		{
 			input: &ast.ListExpr{
@@ -89,7 +89,7 @@ var (
 					&ast.IntLit{Value: 32767},
 					&ast.IntLit{Value: -32768},
 				}},
-			result: &ast.IntLit{Value: -1},
+			result: IntValue(-1),
 		},
 	}
 
@@ -104,7 +104,7 @@ var (
 						}},
 					&ast.IntLit{Value: 123},
 				}},
-			result: &ast.IntLit{Value: 123},
+			result: IntValue(123),
 		},
 		{
 			input: &ast.ListExpr{
@@ -126,7 +126,7 @@ var (
 							&ast.IntLit{Value: 32767}}},
 					&ast.IntLit{Value: 32768},
 				}},
-			result: &ast.IntLit{Value: 65535},
+			result: IntValue(65535),
 		},
 	}
 
@@ -135,7 +135,7 @@ var (
 			input: &ast.CondExpr{
 				BranchList: []*ast.BranchExpr{
 					{
-						Condition: &BoolValue{Value: false},
+						Condition: &ast.BoolLit{Value: false},
 						Body: []ast.Expr{
 							&ast.IntLit{Value: 123},
 						},
@@ -148,26 +148,26 @@ var (
 					},
 				},
 			},
-			result: &IntValue{Value: 654},
+			result: IntValue(654),
 		},
 		{
 			input: &ast.CondExpr{
 				BranchList: []*ast.BranchExpr{
 					{
-						Condition: &BoolValue{Value: false},
+						Condition: &ast.BoolLit{Value: false},
 						Body: []ast.Expr{
 							&ast.IntLit{Value: 123},
 						},
 					},
 					{
-						Condition: &BoolValue{Value: true},
+						Condition: &ast.BoolLit{Value: true},
 						Body: []ast.Expr{
 							&ast.IntLit{Value: 456},
 						},
 					},
 				},
 			},
-			result: &IntValue{Value: 456},
+			result: IntValue(456),
 		},
 	}
 )

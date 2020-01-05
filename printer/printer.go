@@ -19,13 +19,17 @@ func (p *Printer) Print(e ast.Expr) {
 	}
 
 	switch v := e.(type) {
-	case *runtime.BoolValue:
-		fmt.Printf("$ %v\n", v.Value)
-	case *runtime.IntValue:
-		fmt.Printf("$ %v\n", v.Value)
+	case runtime.BoolValue:
+		fmt.Printf("$ %v\n", v)
+	case runtime.IntValue:
+		fmt.Printf("$ %v\n", v)
 	case *runtime.BuiltinProc:
-		fmt.Printf("$ <procedure %s>", v.Name)
+		fmt.Printf("$ <procedure %s>\n", v.Name)
 	case *runtime.ProcValue:
-		fmt.Printf("$ <procedure %s>", v.Name)
+		if len(v.Name) > 0 {
+			fmt.Printf("$ <procedure %s at %p>\n", v.Name, v.LambdaExpr)
+		} else {
+			fmt.Printf("$ <procedure at %p>\n", v.LambdaExpr)
+		}
 	}
 }

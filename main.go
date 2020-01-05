@@ -1,22 +1,25 @@
 package main
 
 import (
-	"mylisp/lexer"
 	"mylisp/parser"
 	"mylisp/printer"
 	"mylisp/runtime"
+	"mylisp/token"
 	"os"
 )
 
 func main() {
-	lex := lexer.NewLexer(os.Stdin)
+	lex := token.NewLexer(os.Stdin)
 	par := parser.NewParser(lex)
 	env := runtime.NewRootEnv()
 	prt := printer.NewPrinter()
 	eprt := printer.NewErrorPrinter()
 
 	for {
-		expr := par.NextExpr()
+		expr, ok := par.Next()
+		if !ok && par.Err() == nil { // EOF
+			break
+		}
 		result, err := env.Eval(expr)
 		if err != nil {
 			eprt.Print(err)

@@ -16,12 +16,7 @@ func NewRootEnv() *EvalEnv {
 func NewEvalEnv(parent *EvalEnv) *EvalEnv {
 	return &EvalEnv{
 		parent: parent,
-		symtab: map[string]ast.Expr{
-			"+": &BuiltinProc{Name: "+"},
-			"-": &BuiltinProc{Name: "+"},
-			"*": &BuiltinProc{Name: "+"},
-			"/": &BuiltinProc{Name: "+"},
-		},
+		symtab: initSymtab(),
 	}
 }
 

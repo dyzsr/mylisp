@@ -12,15 +12,19 @@ func (e *EvalEnv) Eval(inputExpr ast.Expr) (ast.Expr, error) {
 	}
 
 	switch expr := inputExpr.(type) {
-	case *BoolValue:
+	case BoolValue:
 		return expr, nil
-	case *IntValue:
+	case IntValue:
 		return expr, nil
 	case *BuiltinProc:
 		return expr, nil
 	case *ProcValue:
 		return expr, nil
 
+	case *ast.BoolLit:
+		return BoolValue(expr.Value), nil
+	case *ast.IntLit:
+		return IntValue(expr.Value), nil
 	case *ast.Ident:
 		return e.evalIdent(expr)
 	case *ast.ListExpr:
@@ -44,10 +48,11 @@ func (e *EvalEnv) evalIdent(ident *ast.Ident) (ast.Expr, error) {
 }
 
 func (e *EvalEnv) evalListExpr(listExpr *ast.ListExpr) (ast.Expr, error) {
-	subExprList := listExpr.SubExprList
-	if len(subExprList) == 0 {
+	if len(listExpr.SubExprList) == 0 {
 		return nil, errors.New("invalid expression list: at least one sub expression is required")
 	}
+	subExprList := make([]ast.Expr, len(listExpr.SubExprList))
+	copy(subExprList, listExpr.SubExprList)
 	for i, subExpr := range subExprList {
 		var err error
 		subExprList[i], err = e.Eval(subExpr)
@@ -94,11 +99,11 @@ func (e *EvalEnv) evalCondExpr(condExpr *ast.CondExpr) (ast.Expr, error) {
 			if err != nil {
 				return nil, err
 			}
-			boolean, ok := condValue.(*BoolValue)
+			boolean, ok := condValue.(BoolValue)
 			if !ok {
 				return nil, errors.New("branch condition should be a boolean expression")
 			}
-			if !boolean.Value {
+			if !boolean {
 				continue
 			}
 		}

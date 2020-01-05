@@ -7,10 +7,7 @@ const (
 	EOF
 
 	IDENT
-	DEFINE
-	LAMBDA
 	TRUE
-
 	FALSE
 	INTEGER
 
@@ -21,8 +18,8 @@ const (
 	MINUS
 	ASTER
 	SLASH
+	PERCENT
 	EQ
-	NE
 	LT
 	LTE
 	GT
@@ -37,8 +34,6 @@ var (
 		ILLEGAL: "<illegal>",
 		EOF:     "<eof>",
 		IDENT:   "id",
-		DEFINE:  "define",
-		LAMBDA:  "lambda",
 		TRUE:    "true",
 		FALSE:   "false",
 		INTEGER: "int",
@@ -48,15 +43,15 @@ var (
 		MINUS:   "-",
 		ASTER:   "*",
 		SLASH:   "/",
+		PERCENT: "%",
 		EQ:      "=",
-		NE:      "!=",
 		LT:      "<",
 		LTE:     "<=",
 		GT:      ">",
 		GTE:     ">=",
-		AND:     "and",
-		OR:      "or",
-		NOT:     "not",
+		AND:     "&&",
+		OR:      "||",
+		NOT:     "!",
 	}
 )
 
