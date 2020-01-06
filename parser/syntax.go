@@ -32,21 +32,25 @@ func parse(inputExpr ast.Expr) (ast.Expr, error) {
 		return nil, errors.New("bad syntax: empty list")
 	}
 	first := expr.SubExprList[0]
-	ident, ok := first.(*ast.Ident)
-	if !ok {
-		return expr, nil
+	if ident, ok := first.(*ast.Ident); ok {
+		if F := lookup(ident.Name); F != nil {
+			// syntax block
+			result, err := F(expr)
+			if err != nil {
+				return nil, err
+			}
+			return result, nil
+		}
 	}
-	F := lookup(ident.Name)
-	if F == nil { // procedure calls
-		return expr, nil
+	// procedure calls
+	for i, sub := range expr.SubExprList {
+		sub, err := parse(sub)
+		if err != nil {
+			return nil, err
+		}
+		expr.SubExprList[i] = sub
 	}
-
-	// syntax block
-	result, err := F(expr)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	return expr, nil
 }
 
 func lookup(name string) syntaxFunc {
