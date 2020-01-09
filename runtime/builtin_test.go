@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 	"testing"
 )
 

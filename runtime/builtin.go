@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"fmt"
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 )
 
 type (

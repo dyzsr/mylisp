@@ -2,8 +2,8 @@ package printer
 
 import (
 	"fmt"
-	"mylisp/ast"
-	"mylisp/runtime"
+	"github.com/dyzsr/mylisp/ast"
+	"github.com/dyzsr/mylisp/runtime"
 )
 
 type Printer struct {

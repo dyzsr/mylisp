@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"errors"
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 )
 
 type ProcValue struct {

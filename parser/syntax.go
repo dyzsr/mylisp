@@ -2,7 +2,7 @@ package parser
 
 import (
 	"errors"
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 )
 
 type syntaxFunc func(ast.Expr) (ast.Expr, error)

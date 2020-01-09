@@ -2,8 +2,8 @@ package parser
 
 import (
 	"errors"
-	"mylisp/ast"
-	"mylisp/token"
+	"github.com/dyzsr/mylisp/ast"
+	"github.com/dyzsr/mylisp/token"
 )
 
 type Parser struct {

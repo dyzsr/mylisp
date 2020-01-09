@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"mylisp/ast"
-	"mylisp/token"
+	"github.com/dyzsr/mylisp/ast"
+	"github.com/dyzsr/mylisp/token"
 	"reflect"
 	"strings"
 	"testing"

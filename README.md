@@ -1,4 +1,4 @@
-# MyLisp
+# mylisp
 My implementation of the Scheme Language.
 
 Currently support:

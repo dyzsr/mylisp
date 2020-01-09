@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 )
 
 type testStruct struct {

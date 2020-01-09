@@ -2,7 +2,7 @@ package token
 
 import (
 	"io"
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 	"unicode"
 )
 

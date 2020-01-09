@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 	"reflect"
 	"testing"
 )

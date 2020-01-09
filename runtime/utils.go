@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 )
 
 func compare(e1, e2 ast.Expr) bool {

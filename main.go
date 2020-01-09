@@ -1,10 +1,10 @@
 package main
 
 import (
-	"mylisp/parser"
-	"mylisp/printer"
-	"mylisp/runtime"
-	"mylisp/token"
+	"github.com/dyzsr/mylisp/parser"
+	"github.com/dyzsr/mylisp/printer"
+	"github.com/dyzsr/mylisp/runtime"
+	"github.com/dyzsr/mylisp/token"
 	"os"
 )
 

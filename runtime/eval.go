@@ -3,7 +3,7 @@ package runtime
 import (
 	"errors"
 	"fmt"
-	"mylisp/ast"
+	"github.com/dyzsr/mylisp/ast"
 )
 
 func (e *EvalEnv) Eval(inputExpr ast.Expr) (ast.Expr, error) {

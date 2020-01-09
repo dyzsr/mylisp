@@ -1,8 +1,9 @@
 package printer
 
-import "fmt"
-
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 type ErrorPrinter struct {
 }
