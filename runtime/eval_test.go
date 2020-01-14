@@ -14,7 +14,7 @@ type testStruct struct {
 
 func makeTest(testData []testStruct) func(*testing.T) {
 	return func(t *testing.T) {
-		env := NewRootEnv()
+		env := NewRootEvalEnv()
 		for _, test := range testData {
 			result, err := env.Eval(test.input)
 			if err != nil {
@@ -53,22 +53,22 @@ var (
 		},
 		{
 			input:  &ast.Ident{Name: "x"},
-			result: IntValue(32768),
+			result: Int(32768),
 		},
 		{
 			input:  &ast.Ident{Name: "y"},
-			result: IntValue(123),
+			result: Int(123),
 		},
 		{
 			input: &ast.DefineExpr{
 				Ident: &ast.Ident{Name: "x"},
-				Value: IntValue(-32768),
+				Value: Int(-32768),
 			},
 			result: nil,
 		},
 		{
 			input:  &ast.Ident{Name: "x"},
-			result: IntValue(-32768),
+			result: Int(-32768),
 		},
 	}
 
@@ -80,7 +80,7 @@ var (
 					&ast.IntLit{Value: 32767},
 					&ast.IntLit{Value: 32768},
 				}},
-			result: IntValue(65535),
+			result: Int(65535),
 		},
 		{
 			input: &ast.ListExpr{
@@ -89,7 +89,7 @@ var (
 					&ast.IntLit{Value: 32767},
 					&ast.IntLit{Value: -32768},
 				}},
-			result: IntValue(-1),
+			result: Int(-1),
 		},
 	}
 
@@ -104,7 +104,7 @@ var (
 						}},
 					&ast.IntLit{Value: 123},
 				}},
-			result: IntValue(123),
+			result: Int(123),
 		},
 		{
 			input: &ast.ListExpr{
@@ -126,7 +126,7 @@ var (
 							&ast.IntLit{Value: 32767}}},
 					&ast.IntLit{Value: 32768},
 				}},
-			result: IntValue(65535),
+			result: Int(65535),
 		},
 	}
 
@@ -148,7 +148,7 @@ var (
 					},
 				},
 			},
-			result: IntValue(654),
+			result: Int(654),
 		},
 		{
 			input: &ast.CondExpr{
@@ -167,7 +167,7 @@ var (
 					},
 				},
 			},
-			result: IntValue(456),
+			result: Int(456),
 		},
 	}
 )

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/dyzsr/mylisp/parser"
-	"github.com/dyzsr/mylisp/printer"
+	"github.com/dyzsr/mylisp/repl"
 	"github.com/dyzsr/mylisp/runtime"
 	"github.com/dyzsr/mylisp/token"
 	"os"
@@ -11,9 +11,9 @@ import (
 func main() {
 	lex := token.NewLexer(os.Stdin)
 	par := parser.NewParser(lex)
-	env := runtime.NewRootEnv()
-	prt := printer.NewPrinter()
-	eprt := printer.NewErrorPrinter()
+	env := runtime.NewRootEvalEnv()
+	prt := repl.NewPrinter()
+	eprt := repl.NewErrorPrinter()
 
 	for {
 		expr, ok := par.Next()

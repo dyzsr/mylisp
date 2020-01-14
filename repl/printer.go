@@ -1,31 +1,30 @@
-package printer
+package repl
 
 import (
 	"fmt"
-	"github.com/dyzsr/mylisp/ast"
+
 	"github.com/dyzsr/mylisp/runtime"
 )
 
-type Printer struct {
-}
+type Printer struct{}
 
 func NewPrinter() *Printer {
 	return &Printer{}
 }
 
-func (p *Printer) Print(e ast.Expr) {
+func (p *Printer) Print(e runtime.Value) {
 	if e == nil {
 		return
 	}
 
 	switch v := e.(type) {
-	case runtime.BoolValue:
+	case runtime.Bool:
 		fmt.Printf("$ %v\n", v)
-	case runtime.IntValue:
+	case runtime.Int:
 		fmt.Printf("$ %v\n", v)
 	case *runtime.BuiltinProc:
 		fmt.Printf("$ <procedure %s>\n", v.Name)
-	case *runtime.ProcValue:
+	case *runtime.Proc:
 		if len(v.Name) > 0 {
 			fmt.Printf("$ <procedure %s at %p>\n", v.Name, v.LambdaExpr)
 		} else {

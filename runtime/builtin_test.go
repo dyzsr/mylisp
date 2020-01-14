@@ -1,52 +1,51 @@
 package runtime
 
 import (
-	"github.com/dyzsr/mylisp/ast"
 	"testing"
 )
 
 func Test_evalBasic(t *testing.T) {
-	env := NewRootEnv()
+	env := NewRootEvalEnv()
 
 	testData := []struct {
 		opName   string
-		operands []ast.Expr
-		result   ast.Expr
+		operands []Value
+		result   Value
 	}{
 		{
 			"+",
 			nil,
-			IntValue(0),
+			Int(0),
 		},
 		{
 			"+",
-			[]ast.Expr{IntValue(99), IntValue(88), IntValue(77)},
-			IntValue(264),
+			[]Value{Int(99), Int(88), Int(77)},
+			Int(264),
 		},
 		{
 			"-",
-			[]ast.Expr{IntValue(-200), IntValue(-100), IntValue(300)},
-			IntValue(-400),
+			[]Value{Int(-200), Int(-100), Int(300)},
+			Int(-400),
 		},
 		{
 			"-",
-			[]ast.Expr{IntValue(10)},
-			IntValue(-10),
+			[]Value{Int(10)},
+			Int(-10),
 		},
 		{
 			"*",
 			nil,
-			IntValue(1),
+			Int(1),
 		},
 		{
 			"*",
-			[]ast.Expr{IntValue(64), IntValue(16), IntValue(2)},
-			IntValue(2048),
+			[]Value{Int(64), Int(16), Int(2)},
+			Int(2048),
 		},
 		{
 			"/",
-			[]ast.Expr{IntValue(-64), IntValue(16), IntValue(2)},
-			IntValue(-2),
+			[]Value{Int(-64), Int(16), Int(2)},
+			Int(-2),
 		},
 	}
 

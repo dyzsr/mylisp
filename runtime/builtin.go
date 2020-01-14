@@ -5,22 +5,8 @@ import (
 	"github.com/dyzsr/mylisp/ast"
 )
 
-type (
-	BoolValue bool
-
-	IntValue int64
-
-	BuiltinProc struct {
-		Name string
-	}
-)
-
-func (e BoolValue) Expr()    {}
-func (e IntValue) Expr()     {}
-func (e *BuiltinProc) Expr() {}
-
-func initSymtab() map[string]ast.Expr {
-	return map[string]ast.Expr{
+var (
+	defaultSymbols = map[string]ast.Expr{
 		"+":  &BuiltinProc{Name: "+"},
 		"-":  &BuiltinProc{Name: "-"},
 		"*":  &BuiltinProc{Name: "*"},
@@ -35,9 +21,9 @@ func initSymtab() map[string]ast.Expr {
 		"||": &BuiltinProc{Name: "||"},
 		"!":  &BuiltinProc{Name: "!"},
 	}
-}
+)
 
-func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value ast.Expr, err error) {
+func (e *EvalEnv) evalBuiltinProc(opName string, operands ...Value) (value Value, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			value = nil
@@ -62,12 +48,12 @@ func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value as
 	}
 
 	// check operands types & store the operands
-	var nums []IntValue
-	var booleans []BoolValue
+	var nums []Int
+	var booleans []Bool
 	switch opName {
 	case "+", "-", "*", "/", "%", "=", "<", "<=", ">", ">=":
 		for _, operand := range operands {
-			num, ok := operand.(IntValue)
+			num, ok := operand.(Int)
 			if !ok {
 				return nil, fmt.Errorf("operands for procedure '%s' should be numbers", opName)
 			}
@@ -75,7 +61,7 @@ func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value as
 		}
 	case "&&", "||", "!":
 		for _, operand := range operands {
-			boolean, ok := operand.(BoolValue)
+			boolean, ok := operand.(Bool)
 			if !ok {
 				return nil, fmt.Errorf("operands for procedure '%s' should be booleans", opName)
 			}
@@ -114,15 +100,15 @@ func (e *EvalEnv) evalBuiltinProc(opName string, operands ...ast.Expr) (value as
 	return nil, fmt.Errorf("undefined procedure: %s", opName)
 }
 
-func addInt(nums ...IntValue) IntValue {
-	var result IntValue
+func addInt(nums ...Int) Int {
+	var result Int
 	for _, num := range nums {
 		result += num
 	}
 	return result
 }
 
-func subInt(nums ...IntValue) IntValue {
+func subInt(nums ...Int) Int {
 	minuend := nums[0]
 	if len(nums) == 1 {
 		return -minuend
@@ -135,15 +121,15 @@ func subInt(nums ...IntValue) IntValue {
 	return result
 }
 
-func mulInt(nums ...IntValue) IntValue {
-	var result IntValue = 1
+func mulInt(nums ...Int) Int {
+	var result Int = 1
 	for _, num := range nums {
 		result *= num
 	}
 	return result
 }
 
-func divInt(nums ...IntValue) IntValue {
+func divInt(nums ...Int) Int {
 	dividend := nums[0]
 	if len(nums) == 1 {
 		return 1 / dividend
@@ -156,14 +142,14 @@ func divInt(nums ...IntValue) IntValue {
 	return result
 }
 
-func modInt(nums ...IntValue) IntValue {
+func modInt(nums ...Int) Int {
 	result := nums[0] % nums[1]
 	return result
 }
 
-func eqInt(nums ...IntValue) BoolValue {
-	var result BoolValue = true
-	var last IntValue = nums[0]
+func eqInt(nums ...Int) Bool {
+	var result Bool = true
+	var last Int = nums[0]
 	for _, num := range nums[1:] {
 		if last != num {
 			result = false
@@ -173,9 +159,9 @@ func eqInt(nums ...IntValue) BoolValue {
 	return result
 }
 
-func ltInt(nums ...IntValue) BoolValue {
-	var result BoolValue = true
-	var last IntValue = nums[0]
+func ltInt(nums ...Int) Bool {
+	var result Bool = true
+	var last Int = nums[0]
 	for _, num := range nums[1:] {
 		if last >= num {
 			result = false
@@ -185,9 +171,9 @@ func ltInt(nums ...IntValue) BoolValue {
 	return result
 }
 
-func lteInt(nums ...IntValue) BoolValue {
-	var result BoolValue = true
-	var last IntValue = nums[0]
+func lteInt(nums ...Int) Bool {
+	var result Bool = true
+	var last Int = nums[0]
 	for _, num := range nums[1:] {
 		if last > num {
 			result = false
@@ -197,9 +183,9 @@ func lteInt(nums ...IntValue) BoolValue {
 	return result
 }
 
-func gtInt(nums ...IntValue) BoolValue {
-	var result BoolValue = true
-	var last IntValue = nums[0]
+func gtInt(nums ...Int) Bool {
+	var result Bool = true
+	var last Int = nums[0]
 	for _, num := range nums[1:] {
 		if last <= num {
 			result = false
@@ -209,9 +195,9 @@ func gtInt(nums ...IntValue) BoolValue {
 	return result
 }
 
-func gteInt(nums ...IntValue) BoolValue {
-	var result BoolValue = true
-	var last IntValue = nums[0]
+func gteInt(nums ...Int) Bool {
+	var result Bool = true
+	var last Int = nums[0]
 	for _, num := range nums[1:] {
 		if last < num {
 			result = false
@@ -221,22 +207,22 @@ func gteInt(nums ...IntValue) BoolValue {
 	return result
 }
 
-func andBool(booleans ...BoolValue) BoolValue {
-	var result BoolValue = true
+func andBool(booleans ...Bool) Bool {
+	var result Bool = true
 	for _, boolean := range booleans {
 		result = result && boolean
 	}
 	return result
 }
 
-func orBool(booleans ...BoolValue) BoolValue {
-	var result BoolValue = false
+func orBool(booleans ...Bool) Bool {
+	var result Bool = false
 	for _, boolean := range booleans {
 		result = result || boolean
 	}
 	return result
 }
 
-func notBool(booleans ...BoolValue) BoolValue {
+func notBool(booleans ...Bool) Bool {
 	return !booleans[0]
 }

@@ -10,12 +10,12 @@ func compare(e1, e2 ast.Expr) bool {
 	}
 
 	switch v1 := e1.(type) {
-	case BoolValue:
-		if v2, ok := e2.(BoolValue); ok {
+	case Bool:
+		if v2, ok := e2.(Bool); ok {
 			return v1 == v2
 		}
-	case IntValue:
-		if v2, ok := e2.(IntValue); ok {
+	case Int:
+		if v2, ok := e2.(Int); ok {
 			return v1 == v2
 		}
 	}

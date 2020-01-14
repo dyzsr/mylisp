@@ -1,12 +1,11 @@
-package printer
+package repl
 
 import (
 	"fmt"
 	"os"
 )
 
-type ErrorPrinter struct {
-}
+type ErrorPrinter struct{}
 
 func NewErrorPrinter() *ErrorPrinter {
 	return &ErrorPrinter{}
