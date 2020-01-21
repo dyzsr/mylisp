@@ -1,12 +1,11 @@
 package runtime
 
 import (
+	"reflect"
 	"testing"
 )
 
-func Test_evalBasic(t *testing.T) {
-	env := NewRootEvalEnv()
-
+func Test_evalBuiltinProc(t *testing.T) {
 	testData := []struct {
 		opName   string
 		operands []Value
@@ -50,12 +49,12 @@ func Test_evalBasic(t *testing.T) {
 	}
 
 	for _, test := range testData {
-		result, err := env.evalBuiltinProc(test.opName, test.operands...)
+		result, err := evalBuiltinProc(test.opName, test.operands...)
 		if err != nil {
 			t.Error(err)
 			break
 		}
-		if !compare(result, test.result) {
+		if !reflect.DeepEqual(result, test.result) {
 			t.Errorf("expect: {%s}, output: {%s}", test.result, result)
 		}
 		t.Logf("input: {%s}, output: {%s}", test.operands, result)

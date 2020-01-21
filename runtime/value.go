@@ -5,8 +5,7 @@ import (
 )
 
 type Value interface {
-	ast.Expr
-	Type() Type
+	Type() *Type
 }
 
 type (
@@ -15,6 +14,7 @@ type (
 	Int int64
 
 	Symbol struct {
+		Value *string
 	}
 
 	BuiltinProc struct {
@@ -23,29 +23,13 @@ type (
 
 	Proc struct {
 		*ast.LambdaExpr
-		Name string
-		env  *EvalEnv
+		Name  string
+		outer *ast.Scope
 	}
 )
 
-func (e Bool) Expr()         {}
-func (e Int) Expr()          {}
-func (e *Symbol) Expr()      {}
-func (e *BuiltinProc) Expr() {}
-func (e *Proc) Expr()        {}
-
-func (e Bool) Type() Type         { return BOOLEAN }
-func (e Int) Type() Type          { return INTEGER }
-func (e *Symbol) Type() Type      { return SYMBOL }
-func (e *BuiltinProc) Type() Type { return BUILTIN_PROC }
-func (e *Proc) Type() Type        { return PROC }
-
-type Type int
-
-const (
-	BOOLEAN = iota
-	INTEGER
-	SYMBOL
-	BUILTIN_PROC
-	PROC
-)
+func (e Bool) Type() *Type         { return nil }
+func (e Int) Type() *Type          { return nil }
+func (e *Symbol) Type() *Type      { return nil }
+func (e *BuiltinProc) Type() *Type { return nil }
+func (e *Proc) Type() *Type        { return nil }

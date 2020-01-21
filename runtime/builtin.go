@@ -2,11 +2,10 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/dyzsr/mylisp/ast"
 )
 
 var (
-	defaultSymbols = map[string]ast.Expr{
+	defaultSymbols = map[string]Value{
 		"+":  &BuiltinProc{Name: "+"},
 		"-":  &BuiltinProc{Name: "-"},
 		"*":  &BuiltinProc{Name: "*"},
@@ -23,7 +22,7 @@ var (
 	}
 )
 
-func (e *EvalEnv) evalBuiltinProc(opName string, operands ...Value) (value Value, err error) {
+func evalBuiltinProc(opName string, operands ...Value) (value Value, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			value = nil

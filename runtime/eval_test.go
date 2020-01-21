@@ -9,12 +9,12 @@ import (
 
 type testStruct struct {
 	input  ast.Expr
-	result ast.Expr
+	result Value
 }
 
 func makeTest(testData []testStruct) func(*testing.T) {
 	return func(t *testing.T) {
-		env := NewRootEvalEnv()
+		env := NewRootEnv()
 		for _, test := range testData {
 			result, err := env.Eval(test.input)
 			if err != nil {
@@ -62,7 +62,7 @@ var (
 		{
 			input: &ast.DefineExpr{
 				Ident: &ast.Ident{Name: "x"},
-				Value: Int(-32768),
+				Value: &ast.IntLit{Value: -32768},
 			},
 			result: nil,
 		},
