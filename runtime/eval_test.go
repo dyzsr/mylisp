@@ -14,7 +14,7 @@ type testStruct struct {
 
 func makeTest(testData []testStruct) func(*testing.T) {
 	return func(t *testing.T) {
-		env := NewRootEnv()
+		env := NewRuntime()
 		for _, test := range testData {
 			result, err := env.Eval(test.input)
 			if err != nil {

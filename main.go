@@ -13,18 +13,23 @@ func main() {
 	println("start")
 	lex := token.NewLexer(os.Stdin)
 	par := parser.NewParser(lex)
-	env := runtime.NewRootEnv()
+	rt := runtime.NewRuntime()
 	prt := repl.NewPrinter()
 	eprt := repl.NewErrorPrinter()
 
 	for {
 		println("parse")
 		expr, ok := par.Next()
-		if !ok && par.Err() == nil { // EOF
-			break
+		if !ok {
+			err := par.Err()
+			if err == nil { // EOF
+				break
+			}
+			eprt.Print(err)
+			continue
 		}
 		println("eval")
-		result, err := env.Eval(expr)
+		result, err := rt.Eval(expr)
 		println("print")
 		if err != nil {
 			eprt.Print(err)

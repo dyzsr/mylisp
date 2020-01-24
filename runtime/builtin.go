@@ -1,227 +1,263 @@
 package runtime
 
-import (
-	"fmt"
-)
+import "errors"
 
 var (
-	defaultSymbols = map[string]Value{
-		"+":  &BuiltinProc{Name: "+"},
-		"-":  &BuiltinProc{Name: "-"},
-		"*":  &BuiltinProc{Name: "*"},
-		"/":  &BuiltinProc{Name: "/"},
-		"%":  &BuiltinProc{Name: "%"},
-		"=":  &BuiltinProc{Name: "="},
-		"<":  &BuiltinProc{Name: "<"},
-		"<=": &BuiltinProc{Name: "<="},
-		">":  &BuiltinProc{Name: ">"},
-		">=": &BuiltinProc{Name: ">="},
-		"&&": &BuiltinProc{Name: "&&"},
-		"||": &BuiltinProc{Name: "||"},
-		"!":  &BuiltinProc{Name: "!"},
-	}
+	builtinAdd = &BuiltinProc{name: "+", proc: addInt}
+	builtinSub = &BuiltinProc{name: "-", proc: subInt}
+	builtinMul = &BuiltinProc{name: "*", proc: mulInt}
+	builtinDiv = &BuiltinProc{name: "/", proc: divInt}
+	builtinMod = &BuiltinProc{name: "%", proc: modInt}
+	builtinEq  = &BuiltinProc{name: "=", proc: eqInt}
+	builtinLt  = &BuiltinProc{name: "<", proc: ltInt}
+	builtinLte = &BuiltinProc{name: "<=", proc: lteInt}
+	builtinGt  = &BuiltinProc{name: ">", proc: gtInt}
+	builtinGte = &BuiltinProc{name: ">=", proc: gteInt}
+	builtinAnd = &BuiltinProc{name: "&&", proc: andBool}
+	builtinOr  = &BuiltinProc{name: "||", proc: orBool}
+	builtinNot = &BuiltinProc{name: "!", proc: notBool}
 )
 
-func evalBuiltinProc(opName string, operands ...Value) (value Value, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			value = nil
-			err = fmt.Errorf("panic: %s", r)
-		}
-	}()
-
-	// check operands number
-	switch opName {
-	case "-", "/", "=", "<", "<=", ">", ">=":
-		if len(operands) == 0 {
-			return nil, fmt.Errorf("at least one operand is required for procedure '%s'", opName)
-		}
-	case "!":
-		if len(operands) != 1 {
-			return nil, fmt.Errorf("exactly 1 operand is required for procedure '%s'", opName)
-		}
-	case "%":
-		if len(operands) != 2 {
-			return nil, fmt.Errorf("exactly 2 operands are required for procedure '%s'", opName)
-		}
+func builtinProcMap() map[string]Value {
+	return map[string]Value{
+		"+":  builtinAdd,
+		"-":  builtinSub,
+		"*":  builtinMul,
+		"/":  builtinDiv,
+		"%":  builtinMod,
+		"=":  builtinEq,
+		"<":  builtinLt,
+		"<=": builtinLte,
+		">":  builtinGt,
+		">=": builtinGte,
+		"&&": builtinAnd,
+		"||": builtinOr,
+		"!":  builtinNot,
 	}
-
-	// check operands types & store the operands
-	var nums []Int
-	var booleans []Bool
-	switch opName {
-	case "+", "-", "*", "/", "%", "=", "<", "<=", ">", ">=":
-		for _, operand := range operands {
-			num, ok := operand.(Int)
-			if !ok {
-				return nil, fmt.Errorf("operands for procedure '%s' should be numbers", opName)
-			}
-			nums = append(nums, num)
-		}
-	case "&&", "||", "!":
-		for _, operand := range operands {
-			boolean, ok := operand.(Bool)
-			if !ok {
-				return nil, fmt.Errorf("operands for procedure '%s' should be booleans", opName)
-			}
-			booleans = append(booleans, boolean)
-		}
-	}
-
-	switch opName {
-	case "+":
-		return addInt(nums...), nil
-	case "-":
-		return subInt(nums...), nil
-	case "*":
-		return mulInt(nums...), nil
-	case "/":
-		return divInt(nums...), nil
-	case "%":
-		return modInt(nums...), nil
-	case "=":
-		return eqInt(nums...), nil
-	case "<":
-		return ltInt(nums...), nil
-	case "<=":
-		return lteInt(nums...), nil
-	case ">":
-		return gtInt(nums...), nil
-	case ">=":
-		return gteInt(nums...), nil
-	case "&&":
-		return andBool(booleans...), nil
-	case "||":
-		return orBool(booleans...), nil
-	case "!":
-		return notBool(booleans...), nil
-	}
-	return nil, fmt.Errorf("undefined procedure: %s", opName)
 }
 
-func addInt(nums ...Int) Int {
+var (
+	typeMismatchErr  = errors.New("operand types mismatch")
+	arityMismatchErr = errors.New("arity mismatch")
+)
+
+func toInts(args []Value) ([]Int, error) {
+	var nums []Int
+	for _, arg := range args {
+		num, ok := arg.(Int)
+		if !ok {
+			return nil, typeMismatchErr
+		}
+		nums = append(nums, num)
+	}
+	return nums, nil
+}
+
+func toBools(args []Value) ([]Bool, error) {
+	var bools []Bool
+	for _, arg := range args {
+		bol, ok := arg.(Bool)
+		if !ok {
+			return nil, typeMismatchErr
+		}
+		bools = append(bools, bol)
+	}
+	return bools, nil
+}
+
+func addInt(args ...Value) (Value, error) {
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
 	var result Int
 	for _, num := range nums {
 		result += num
 	}
-	return result
+	return result, nil
 }
 
-func subInt(nums ...Int) Int {
-	minuend := nums[0]
-	if len(nums) == 1 {
-		return -minuend
+func subInt(args ...Value) (Value, error) {
+	if len(args) == 0 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
 	}
 
+	// negation
+	minuend := nums[0]
+	if len(nums) == 1 {
+		return -minuend, nil
+	}
+
+	// subtraction
 	result := minuend
 	for _, num := range nums[1:] {
 		result -= num
 	}
-	return result
+	return result, nil
 }
 
-func mulInt(nums ...Int) Int {
+func mulInt(args ...Value) (Value, error) {
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
 	var result Int = 1
 	for _, num := range nums {
 		result *= num
 	}
-	return result
+	return result, nil
 }
 
-func divInt(nums ...Int) Int {
-	dividend := nums[0]
-	if len(nums) == 1 {
-		return 1 / dividend
+func divInt(args ...Value) (Value, error) {
+	if len(args) < 2 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
 	}
 
-	result := dividend
+	result := nums[0]
 	for _, num := range nums[1:] {
 		result /= num
 	}
-	return result
+	return result, nil
 }
 
-func modInt(nums ...Int) Int {
+func modInt(args ...Value) (Value, error) {
+	if len(args) != 2 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
 	result := nums[0] % nums[1]
-	return result
+	return result, nil
 }
 
-func eqInt(nums ...Int) Bool {
-	var result Bool = true
-	var last Int = nums[0]
-	for _, num := range nums[1:] {
-		if last != num {
-			result = false
-			break
+func eqInt(args ...Value) (Value, error) {
+	if len(args) == 0 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 1; i < len(nums); i++ {
+		if nums[i-1] != nums[i] {
+			return Bool(false), nil
 		}
 	}
-	return result
+	return Bool(true), nil
 }
 
-func ltInt(nums ...Int) Bool {
-	var result Bool = true
-	var last Int = nums[0]
-	for _, num := range nums[1:] {
-		if last >= num {
-			result = false
-			break
+func ltInt(args ...Value) (Value, error) {
+	if len(args) == 0 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 1; i < len(nums); i++ {
+		if nums[i-1] >= nums[i] {
+			return Bool(false), nil
 		}
 	}
-	return result
+	return Bool(true), nil
 }
 
-func lteInt(nums ...Int) Bool {
-	var result Bool = true
-	var last Int = nums[0]
-	for _, num := range nums[1:] {
-		if last > num {
-			result = false
-			break
+func lteInt(args ...Value) (Value, error) {
+	if len(args) == 0 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 1; i < len(nums); i++ {
+		if nums[i-1] > nums[i] {
+			return Bool(false), nil
 		}
 	}
-	return result
+	return Bool(true), nil
 }
 
-func gtInt(nums ...Int) Bool {
-	var result Bool = true
-	var last Int = nums[0]
-	for _, num := range nums[1:] {
-		if last <= num {
-			result = false
-			break
+func gtInt(args ...Value) (Value, error) {
+	if len(args) == 0 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 1; i < len(nums); i++ {
+		if nums[i-1] <= nums[i] {
+			return Bool(false), nil
 		}
 	}
-	return result
+	return Bool(true), nil
 }
 
-func gteInt(nums ...Int) Bool {
-	var result Bool = true
-	var last Int = nums[0]
-	for _, num := range nums[1:] {
-		if last < num {
-			result = false
-			break
+func gteInt(args ...Value) (Value, error) {
+	if len(args) == 0 {
+		return nil, arityMismatchErr
+	}
+	nums, err := toInts(args)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 1; i < len(nums); i++ {
+		if nums[i-1] < nums[i] {
+			return Bool(false), nil
 		}
 	}
-	return result
+	return Bool(true), nil
 }
 
-func andBool(booleans ...Bool) Bool {
-	var result Bool = true
-	for _, boolean := range booleans {
-		result = result && boolean
+func andBool(args ...Value) (Value, error) {
+	bools, err := toBools(args)
+	if err != nil {
+		return nil, err
 	}
-	return result
-}
-
-func orBool(booleans ...Bool) Bool {
-	var result Bool = false
-	for _, boolean := range booleans {
-		result = result || boolean
+	for _, bol := range bools {
+		if !bol {
+			return Bool(false), nil
+		}
 	}
-	return result
+	return Bool(true), nil
 }
 
-func notBool(booleans ...Bool) Bool {
-	return !booleans[0]
+func orBool(args ...Value) (Value, error) {
+	bools, err := toBools(args)
+	if err != nil {
+		return nil, err
+	}
+	for _, bol := range bools {
+		if bol {
+			return Bool(true), nil
+		}
+	}
+	return Bool(false), nil
+}
+
+func notBool(args ...Value) (Value, error) {
+	if len(args) != 1 {
+		return nil, arityMismatchErr
+	}
+	bools, err := toBools(args)
+	if err != nil {
+		return nil, err
+	}
+	return !bools[0], nil
 }

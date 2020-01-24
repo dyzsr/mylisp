@@ -2,14 +2,14 @@ package parser
 
 import (
 	"errors"
+
 	"github.com/dyzsr/mylisp/ast"
 	"github.com/dyzsr/mylisp/token"
 )
 
 type Parser struct {
 	lexer *token.Lexer
-
-	err error
+	err   error
 }
 
 func NewParser(l *token.Lexer) *Parser {
@@ -51,33 +51,40 @@ func (p *Parser) next() (ast.Expr, error) {
 	// defer fmt.Println("Parser next: end")
 	tok, expr := p.lexer.Next()
 	// fmt.Printf("tok: '%s'\n", tok)
-	if tok == token.EOF {
+
+	switch tok {
+	case token.EOF:
 		return nil, nil
-	}
-	if tok == token.RPAREN {
+	case token.RPAREN: // invalid
 		return nil, errors.New("unexpected ')'")
+	case token.QUOTE:
+		node, err := p.next()
+		if err != nil {
+			return nil, err
+		}
+		return &ast.ListExpr{
+			SubExprList: []ast.Expr{&ast.Ident{Name: "quote"}, node},
+		}, nil
 	}
-	if tok != token.LPAREN {
-		// fmt.Printf("atom: %s\n", expr)
+	if tok != token.LPAREN { // atom
+		// println("atom", expr)
 		return expr, nil
 	}
 
+	// nested
 	var list []ast.Expr
 L:
-	for tok, node := p.lexer.LookupOne(); tok != token.EOF; tok, node = p.lexer.LookupOne() {
+	for tok, _ := p.lexer.LookupOne(); tok != token.EOF; tok, _ = p.lexer.LookupOne() {
 		switch tok {
-		case token.LPAREN:
-			node, err := p.next()
-			if err != nil {
-				return nil, err
-			}
-			list = append(list, node)
 		case token.RPAREN:
 			// fmt.Printf("tok: '%s'\n", tok)
 			p.lexer.Next()
 			break L
 		default:
-			p.lexer.Next()
+			node, err := p.next()
+			if err != nil {
+				return nil, err
+			}
 			list = append(list, node)
 		}
 	}

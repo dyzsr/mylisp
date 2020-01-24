@@ -1,8 +1,8 @@
 package token
 
 import (
-	"io"
 	"github.com/dyzsr/mylisp/ast"
+	"io"
 	"unicode"
 )
 
@@ -136,6 +136,9 @@ func (l *Lexer) readOther(first rune) Token {
 
 	var tok Token
 	switch first {
+	case '`':
+		tok = QUOTE
+		l.node = &ast.Ident{Name: "`"}
 	case '+':
 		tok = PLUS
 		l.node = &ast.Ident{Name: "+"}

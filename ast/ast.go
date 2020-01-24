@@ -1,5 +1,11 @@
 package ast
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
 type Expr interface {
 	Pos() *Pos
 	End() *Pos
@@ -12,6 +18,9 @@ type (
 
 	IntLit struct {
 		Value int64
+	}
+
+	Quote struct {
 	}
 
 	Ident struct {
@@ -60,3 +69,52 @@ func (e *DefineExpr) End() *Pos { return nil }
 func (e *LambdaExpr) End() *Pos { return nil }
 func (e *CondExpr) End() *Pos   { return nil }
 func (e *BranchExpr) End() *Pos { return nil }
+
+func (e *BoolLit) String() string {
+	return strconv.FormatBool(e.Value)
+}
+
+func (e *IntLit) String() string {
+	return strconv.FormatInt(e.Value, 10)
+}
+
+func (e *Ident) String() string {
+	return e.Name
+}
+
+func (e *ListExpr) String() string {
+	var substr []string
+	for _, expr := range e.SubExprList {
+		substr = append(substr, fmt.Sprintf("%s", expr))
+	}
+	return "(" + strings.Join(substr, " ") + ")"
+}
+
+func (e *DefineExpr) String() string {
+	return fmt.Sprintf("(define %s %s)", e.Ident, e.Value)
+}
+
+func (e *LambdaExpr) String() string {
+	return fmt.Sprintf("(lambda %s %s)", e.Args, e.Body)
+}
+
+func (e *CondExpr) String() string {
+	var substr []string
+	for i := range e.BranchList {
+		substr = append(substr, fmt.Sprintf("%s", e.BranchList[i]))
+	}
+	return "(cond " + strings.Join(substr, " ") + ")"
+}
+
+func (e *BranchExpr) String() string {
+	var substr []string
+	if e.Else {
+		substr = append(substr, "else")
+	} else {
+		substr = append(substr, fmt.Sprintf("%s", e.Condition))
+	}
+	for i := range e.Body {
+		substr = append(substr, fmt.Sprintf("%s", e.Body[i]))
+	}
+	return "(" + strings.Join(substr, " ") + ")"
+}

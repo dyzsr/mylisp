@@ -31,12 +31,39 @@ func Test_next(t *testing.T) {
 				},
 			},
 		},
+		{
+			input: "(article `SetTime `(2020 1 23 22 42))",
+			result: &ast.ListExpr{
+				SubExprList: []ast.Expr{
+					&ast.Ident{Name: "article"},
+					&ast.ListExpr{
+						SubExprList: []ast.Expr{
+							&ast.Ident{Name: "quote"},
+							&ast.Ident{Name: "SetTime"},
+						},
+					},
+					&ast.ListExpr{
+						SubExprList: []ast.Expr{
+							&ast.Ident{Name: "quote"},
+							&ast.ListExpr{
+								SubExprList: []ast.Expr{
+									&ast.IntLit{Value: 2020},
+									&ast.IntLit{Value: 1},
+									&ast.IntLit{Value: 23},
+									&ast.IntLit{Value: 22},
+									&ast.IntLit{Value: 42},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
-	p := NewParser(nil)
 	for _, test := range testData {
 		r := strings.NewReader(test.input)
-		p.SetLexer(token.NewLexer(r))
+		p := NewParser(token.NewLexer(r))
 		result, err := p.next()
 		if err != nil {
 			t.Error(err)
@@ -44,7 +71,7 @@ func Test_next(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(result, test.result) {
-			t.Errorf("input: '%s', expect: %s, output: %s", test.input, test.result, result)
+			t.Errorf("\ninput: '%s'\nexpect: %s\noutput: %s", test.input, test.result, result)
 		}
 	}
 }

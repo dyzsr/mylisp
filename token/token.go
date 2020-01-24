@@ -14,6 +14,7 @@ const (
 	LPAREN
 	RPAREN
 
+	QUOTE
 	PLUS
 	MINUS
 	ASTER
@@ -39,6 +40,7 @@ var (
 		INTEGER: "int",
 		LPAREN:  "(",
 		RPAREN:  ")",
+		QUOTE:   "`",
 		PLUS:    "+",
 		MINUS:   "-",
 		ASTER:   "*",

@@ -7,47 +7,38 @@ import (
 	"github.com/dyzsr/mylisp/ast"
 )
 
-type Env struct {
+type Runtime struct {
 	scope *ast.Scope
 }
 
-func NewRootEnv() *Env {
+func NewRuntime() *Runtime {
 	scope := ast.NewRootScope()
-	for k, v := range defaultSymbols {
+	for k, v := range builtinProcMap() {
 		scope.Insert(k, v)
 	}
-	return &Env{
+	return &Runtime{
 		scope: scope,
 	}
 }
 
-func NewEnv(parent *Env) *Env {
-	return &Env{
-		scope: ast.NewScope(parent.scope),
-	}
-}
-
-func (e *Env) Lookup(name string) (Value, bool) {
+func (e *Runtime) Lookup(name string) (Value, bool) {
 	if value, ok := e.scope.Lookup(name); ok {
 		return value.(Value), true
 	}
 	return nil, false
 }
 
-func (e *Env) Insert(name string, value Value) {
+func (e *Runtime) Insert(name string, value Value) {
 	e.scope.Insert(name, value)
 }
 
-func (e *Env) Eval(input interface{}) (Value, error) {
+func (e *Runtime) Eval(input ast.Expr) (Value, error) {
 	return eval(e.scope, input)
 }
 
-func eval(scope *ast.Scope, input interface{}) (Value, error) {
+func eval(scope *ast.Scope, input ast.Expr) (Value, error) {
 	if input == nil {
 		return nil, nil
-	}
-	if value, ok := input.(Value); ok {
-		return value, nil
 	}
 
 	switch expr := input.(type) {
@@ -95,11 +86,15 @@ func evalListExpr(scope *ast.Scope, listExpr *ast.ListExpr) (Value, error) {
 
 	switch op := operator.(type) {
 	case *BuiltinProc:
-		return evalBuiltinProc(op.Name, operands...)
+		return evalBuiltinProc(op, operands...)
 	case *Proc:
 		return evalProc(op, operands...)
 	}
 	return nil, errors.New("invalid operator: either an identifier, basic procedure, or lambda expression is expected")
+}
+
+func evalBuiltinProc(op *BuiltinProc, operands ...Value) (value Value, err error) {
+	return op.proc(operands...)
 }
 
 func evalProc(proc *Proc, operands ...Value) (Value, error) {
@@ -127,8 +122,8 @@ func evalDefineExpr(scope *ast.Scope, defineExpr *ast.DefineExpr) (Value, error)
 		return nil, err
 	}
 	scope.Insert(defineExpr.Ident.Name, value)
-	if proc, ok := value.(*Proc); ok && len(proc.Name) == 0 {
-		proc.Name = defineExpr.Ident.Name
+	if proc, ok := value.(*Proc); ok && len(proc.name) == 0 {
+		proc.name = defineExpr.Ident.Name
 	}
 	return nil, nil
 }

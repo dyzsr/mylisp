@@ -1,7 +1,6 @@
 package token
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -41,6 +40,13 @@ var (
 				LPAREN, GTE, IDENT, IDENT, IDENT, RPAREN, RPAREN, RPAREN,
 			},
 		},
+		{
+			input: "`(a b `(d `x `y) `(123 456 `789))",
+			result: []Token{
+				QUOTE, LPAREN, IDENT, IDENT, QUOTE, LPAREN, IDENT, QUOTE, IDENT, QUOTE, IDENT, RPAREN,
+				QUOTE, LPAREN, INTEGER, INTEGER, QUOTE, INTEGER, RPAREN, RPAREN,
+			},
+		},
 	}
 )
 
@@ -61,9 +67,9 @@ func testNextToken(input string) []Token {
 	var result []Token
 	for t, _ := l.LookupOne(); t != EOF; t, _ = l.LookupOne() {
 		tok, _ := l.Next()
-		fmt.Print(t, " ")
+		print(t.String(), " ")
 		result = append(result, tok)
 	}
-	fmt.Println()
+	println()
 	return result
 }
