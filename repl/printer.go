@@ -14,6 +14,7 @@ func NewPrinter() *Printer {
 
 func (p *Printer) Print(v runtime.Value) {
 	if v == nil {
+		// println("nil")
 		return
 	}
 	fmt.Printf("$ %s\n", v)

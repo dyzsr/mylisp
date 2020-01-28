@@ -16,16 +16,16 @@ func Test_next(t *testing.T) {
 		{
 			input: "(define f (lambda (x) x))",
 			result: &ast.ListExpr{
-				SubExprList: []ast.Expr{
-					&ast.Ident{Name: "define"},
-					&ast.Ident{Name: "f"},
+				List: []ast.Expr{
+					ast.NewIdent("define"),
+					ast.NewIdent("f"),
 					&ast.ListExpr{
-						SubExprList: []ast.Expr{
-							&ast.Ident{Name: "lambda"},
+						List: []ast.Expr{
+							ast.NewIdent("lambda"),
 							&ast.ListExpr{
-								SubExprList: []ast.Expr{&ast.Ident{Name: "x"}},
+								List: []ast.Expr{ast.NewIdent("x")},
 							},
-							&ast.Ident{Name: "x"},
+							ast.NewIdent("x"),
 						},
 					},
 				},
@@ -34,19 +34,19 @@ func Test_next(t *testing.T) {
 		{
 			input: "(article `SetTime `(2020 1 23 22 42))",
 			result: &ast.ListExpr{
-				SubExprList: []ast.Expr{
-					&ast.Ident{Name: "article"},
+				List: []ast.Expr{
+					ast.NewIdent("article"),
 					&ast.ListExpr{
-						SubExprList: []ast.Expr{
-							&ast.Ident{Name: "quote"},
-							&ast.Ident{Name: "SetTime"},
+						List: []ast.Expr{
+							ast.NewIdent("quote"),
+							ast.NewIdent("SetTime"),
 						},
 					},
 					&ast.ListExpr{
-						SubExprList: []ast.Expr{
-							&ast.Ident{Name: "quote"},
+						List: []ast.Expr{
+							ast.NewIdent("quote"),
 							&ast.ListExpr{
-								SubExprList: []ast.Expr{
+								List: []ast.Expr{
 									&ast.IntLit{Value: 2020},
 									&ast.IntLit{Value: 1},
 									&ast.IntLit{Value: 23},

@@ -38,12 +38,13 @@ func (p *Parser) Next() (ast.Expr, bool) {
 		p.err = nil
 		return nil, false
 	}
-	result, err := parse(expr)
-	if err != nil {
-		p.err = err
-		return nil, false
-	}
-	return result, true
+	return expr, true
+	// result, err := parse(expr)
+	// if err != nil {
+	// 	p.err = err
+	// 	return nil, false
+	// }
+	// return result, true
 }
 
 func (p *Parser) next() (ast.Expr, error) {
@@ -63,7 +64,7 @@ func (p *Parser) next() (ast.Expr, error) {
 			return nil, err
 		}
 		return &ast.ListExpr{
-			SubExprList: []ast.Expr{&ast.Ident{Name: "quote"}, node},
+			List: []ast.Expr{ast.NewIdent("quote"), node},
 		}, nil
 	}
 	if tok != token.LPAREN { // atom
@@ -89,5 +90,5 @@ L:
 		}
 	}
 	// fmt.Printf("list: %s\n", list)
-	return &ast.ListExpr{SubExprList: list}, nil
+	return &ast.ListExpr{List: list}, nil
 }

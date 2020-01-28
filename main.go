@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/dyzsr/mylisp/compiletime"
 	"github.com/dyzsr/mylisp/parser"
 	"github.com/dyzsr/mylisp/repl"
 	"github.com/dyzsr/mylisp/runtime"
@@ -10,15 +11,17 @@ import (
 )
 
 func main() {
-	println("start")
+	// println("start")
+
 	lex := token.NewLexer(os.Stdin)
 	par := parser.NewParser(lex)
+	ct := compiletime.NewCompileTime()
 	rt := runtime.NewRuntime()
 	prt := repl.NewPrinter()
 	eprt := repl.NewErrorPrinter()
 
 	for {
-		println("parse")
+		// println("parse")
 		expr, ok := par.Next()
 		if !ok {
 			err := par.Err()
@@ -28,9 +31,18 @@ func main() {
 			eprt.Print(err)
 			continue
 		}
-		println("eval")
+
+		// println("compile time")
+		expr, err := ct.Eval(expr)
+		if err != nil {
+			eprt.Print(err)
+			continue
+		}
+
+		// println("runtime")
 		result, err := rt.Eval(expr)
-		println("print")
+
+		// println("print")
 		if err != nil {
 			eprt.Print(err)
 		} else {

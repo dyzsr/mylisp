@@ -14,26 +14,15 @@ type Runtime struct {
 func NewRuntime() *Runtime {
 	scope := ast.NewRootScope()
 	for k, v := range builtinProcMap() {
-		scope.Insert(k, v)
+		scope.Insert(ast.SymbolMap(k), v)
 	}
 	return &Runtime{
 		scope: scope,
 	}
 }
 
-func (e *Runtime) Lookup(name string) (Value, bool) {
-	if value, ok := e.scope.Lookup(name); ok {
-		return value.(Value), true
-	}
-	return nil, false
-}
-
-func (e *Runtime) Insert(name string, value Value) {
-	e.scope.Insert(name, value)
-}
-
-func (e *Runtime) Eval(input ast.Expr) (Value, error) {
-	return eval(e.scope, input)
+func (r *Runtime) Eval(input ast.Expr) (Value, error) {
+	return eval(r.scope, input)
 }
 
 func eval(scope *ast.Scope, input ast.Expr) (Value, error) {
@@ -63,17 +52,17 @@ func eval(scope *ast.Scope, input ast.Expr) (Value, error) {
 func evalIdent(scope *ast.Scope, ident *ast.Ident) (Value, error) {
 	value, ok := scope.Lookup(ident.Name)
 	if !ok {
-		return nil, fmt.Errorf("identifier '%s' is not bound for any value", ident.Name)
+		return nil, fmt.Errorf("identifier '%s' is not bound for any value", *ident.Name)
 	}
 	return value.(Value), nil
 }
 
 func evalListExpr(scope *ast.Scope, listExpr *ast.ListExpr) (Value, error) {
-	if len(listExpr.SubExprList) == 0 {
+	if len(listExpr.List) == 0 {
 		return nil, errors.New("invalid expression list: at least one sub expression is required")
 	}
-	valueList := make([]Value, len(listExpr.SubExprList))
-	for i, subExpr := range listExpr.SubExprList {
+	valueList := make([]Value, len(listExpr.List))
+	for i, subExpr := range listExpr.List {
 		var err error
 		valueList[i], err = eval(scope, subExpr)
 		if err != nil {
@@ -122,7 +111,7 @@ func evalDefineExpr(scope *ast.Scope, defineExpr *ast.DefineExpr) (Value, error)
 		return nil, err
 	}
 	scope.Insert(defineExpr.Ident.Name, value)
-	if proc, ok := value.(*Proc); ok && len(proc.name) == 0 {
+	if proc, ok := value.(*Proc); ok && proc.name == nil {
 		proc.name = defineExpr.Ident.Name
 	}
 	return nil, nil
@@ -136,7 +125,7 @@ func evalLambdaExpr(scope *ast.Scope, lambdaExpr *ast.LambdaExpr) (Value, error)
 }
 
 func evalCondExpr(scope *ast.Scope, condExpr *ast.CondExpr) (Value, error) {
-	for _, branch := range condExpr.BranchList {
+	for _, branch := range condExpr.List {
 		if !branch.Else {
 			condValue, err := eval(scope, branch.Condition)
 			if err != nil {

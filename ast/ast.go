@@ -21,14 +21,15 @@ type (
 	}
 
 	Quote struct {
+		Expr Expr
 	}
 
 	Ident struct {
-		Name string
+		Name *string
 	}
 
 	ListExpr struct {
-		SubExprList []Expr
+		List []Expr
 	}
 
 	DefineExpr struct {
@@ -42,7 +43,7 @@ type (
 	}
 
 	CondExpr struct {
-		BranchList []*BranchExpr
+		List []*BranchExpr
 	}
 
 	BranchExpr struct {
@@ -70,6 +71,12 @@ func (e *LambdaExpr) End() *Pos { return nil }
 func (e *CondExpr) End() *Pos   { return nil }
 func (e *BranchExpr) End() *Pos { return nil }
 
+func NewIdent(name string) *Ident {
+	return &Ident{
+		Name: SymbolMap(name),
+	}
+}
+
 func (e *BoolLit) String() string {
 	return strconv.FormatBool(e.Value)
 }
@@ -79,15 +86,15 @@ func (e *IntLit) String() string {
 }
 
 func (e *Ident) String() string {
-	return e.Name
+	return *e.Name
 }
 
 func (e *ListExpr) String() string {
 	var substr []string
-	for _, expr := range e.SubExprList {
+	for _, expr := range e.List {
 		substr = append(substr, fmt.Sprintf("%s", expr))
 	}
-	return "(" + strings.Join(substr, " ") + ")"
+	return "[" + strings.Join(substr, " ") + "]"
 }
 
 func (e *DefineExpr) String() string {
@@ -100,8 +107,8 @@ func (e *LambdaExpr) String() string {
 
 func (e *CondExpr) String() string {
 	var substr []string
-	for i := range e.BranchList {
-		substr = append(substr, fmt.Sprintf("%s", e.BranchList[i]))
+	for i := range e.List {
+		substr = append(substr, fmt.Sprintf("%s", e.List[i]))
 	}
 	return "(cond " + strings.Join(substr, " ") + ")"
 }

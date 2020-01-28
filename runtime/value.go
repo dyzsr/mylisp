@@ -33,7 +33,7 @@ type (
 	}
 
 	Proc struct {
-		name  string
+		name  *string
 		outer *ast.Scope
 		*ast.LambdaExpr
 	}
@@ -86,8 +86,8 @@ func (v *BuiltinProc) String() string {
 }
 
 func (v *Proc) String() string {
-	if v.name == "" {
+	if v.name == nil {
 		return "<procedure>:proc"
 	}
-	return "<procedure " + v.name + ">"
+	return "<procedure " + *v.name + ">"
 }

@@ -2,7 +2,7 @@ package ast
 
 type Scope struct {
 	parent *Scope
-	symtab map[string]interface{}
+	symtab map[*string]interface{}
 }
 
 func NewRootScope() *Scope {
@@ -12,11 +12,11 @@ func NewRootScope() *Scope {
 func NewScope(parent *Scope) *Scope {
 	return &Scope{
 		parent: parent,
-		symtab: make(map[string]interface{}),
+		symtab: make(map[*string]interface{}),
 	}
 }
 
-func (s *Scope) Lookup(name string) (interface{}, bool) {
+func (s *Scope) Lookup(name *string) (interface{}, bool) {
 	if value, ok := s.symtab[name]; ok {
 		return value, true
 	}
@@ -26,6 +26,6 @@ func (s *Scope) Lookup(name string) (interface{}, bool) {
 	return nil, false
 }
 
-func (s *Scope) Insert(name string, value interface{}) {
+func (s *Scope) Insert(name *string, value interface{}) {
 	s.symtab[name] = value
 }

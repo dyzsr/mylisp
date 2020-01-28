@@ -118,7 +118,7 @@ func (l *Lexer) readIdent(first rune) Token {
 	case FALSE:
 		l.node = &ast.BoolLit{Value: false}
 	default:
-		l.node = &ast.Ident{Name: ident}
+		l.node = ast.NewIdent(ident)
 	}
 	return tok
 }
@@ -138,34 +138,34 @@ func (l *Lexer) readOther(first rune) Token {
 	switch first {
 	case '`':
 		tok = QUOTE
-		l.node = &ast.Ident{Name: "`"}
+		l.node = ast.NewIdent("`")
 	case '+':
 		tok = PLUS
-		l.node = &ast.Ident{Name: "+"}
+		l.node = ast.NewIdent("+")
 	case '-':
 		tok = MINUS
-		l.node = &ast.Ident{Name: "-"}
+		l.node = ast.NewIdent("-")
 	case '*':
 		tok = ASTER
-		l.node = &ast.Ident{Name: "*"}
+		l.node = ast.NewIdent("*")
 	case '/':
 		tok = SLASH
-		l.node = &ast.Ident{Name: "/"}
+		l.node = ast.NewIdent("/")
 	case '%':
 		tok = PERCENT
-		l.node = &ast.Ident{Name: "%"}
+		l.node = ast.NewIdent("%")
 	case '=':
 		tok = EQ
-		l.node = &ast.Ident{Name: "="}
+		l.node = ast.NewIdent("=")
 	case '<':
 		if !ok {
 			tok = ILLEGAL
 		} else if ch != '=' {
 			tok = LT
-			l.node = &ast.Ident{Name: "<"}
+			l.node = ast.NewIdent("<")
 		} else {
 			tok = LTE
-			l.node = &ast.Ident{Name: "<="}
+			l.node = ast.NewIdent("<=")
 			l.sc.get()
 		}
 	case '>':
@@ -173,10 +173,10 @@ func (l *Lexer) readOther(first rune) Token {
 			tok = ILLEGAL
 		} else if ch != '=' {
 			tok = GT
-			l.node = &ast.Ident{Name: ">"}
+			l.node = ast.NewIdent(">")
 		} else {
 			tok = GTE
-			l.node = &ast.Ident{Name: ">="}
+			l.node = ast.NewIdent(">=")
 			l.sc.get()
 		}
 	case '&':
@@ -184,7 +184,7 @@ func (l *Lexer) readOther(first rune) Token {
 			tok = ILLEGAL
 		} else {
 			tok = AND
-			l.node = &ast.Ident{Name: "&&"}
+			l.node = ast.NewIdent("&&")
 			l.sc.get()
 		}
 	case '|':
@@ -192,12 +192,12 @@ func (l *Lexer) readOther(first rune) Token {
 			tok = ILLEGAL
 		} else {
 			tok = OR
-			l.node = &ast.Ident{Name: "||"}
+			l.node = ast.NewIdent("||")
 			l.sc.get()
 		}
 	case '!':
 		tok = NOT
-		l.node = &ast.Ident{Name: "!"}
+		l.node = ast.NewIdent("!")
 	}
 
 	return tok

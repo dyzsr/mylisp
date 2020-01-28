@@ -39,35 +39,35 @@ var (
 	testDefineExpr = []testStruct{
 		{
 			input: &ast.DefineExpr{
-				Ident: &ast.Ident{Name: "x"},
+				Ident: ast.NewIdent("x"),
 				Value: &ast.IntLit{Value: 32768},
 			},
 			result: nil,
 		},
 		{
 			input: &ast.DefineExpr{
-				Ident: &ast.Ident{Name: "y"},
+				Ident: ast.NewIdent("y"),
 				Value: &ast.IntLit{Value: 123},
 			},
 			result: nil,
 		},
 		{
-			input:  &ast.Ident{Name: "x"},
+			input:  ast.NewIdent("x"),
 			result: Int(32768),
 		},
 		{
-			input:  &ast.Ident{Name: "y"},
+			input:  ast.NewIdent("y"),
 			result: Int(123),
 		},
 		{
 			input: &ast.DefineExpr{
-				Ident: &ast.Ident{Name: "x"},
+				Ident: ast.NewIdent("x"),
 				Value: &ast.IntLit{Value: -32768},
 			},
 			result: nil,
 		},
 		{
-			input:  &ast.Ident{Name: "x"},
+			input:  ast.NewIdent("x"),
 			result: Int(-32768),
 		},
 	}
@@ -75,8 +75,8 @@ var (
 	testListExpr = []testStruct{
 		{
 			input: &ast.ListExpr{
-				SubExprList: []ast.Expr{
-					&ast.Ident{Name: "+"},
+				List: []ast.Expr{
+					ast.NewIdent("+"),
 					&ast.IntLit{Value: 32767},
 					&ast.IntLit{Value: 32768},
 				}},
@@ -84,8 +84,8 @@ var (
 		},
 		{
 			input: &ast.ListExpr{
-				SubExprList: []ast.Expr{
-					&ast.Ident{Name: "+"},
+				List: []ast.Expr{
+					ast.NewIdent("+"),
 					&ast.IntLit{Value: 32767},
 					&ast.IntLit{Value: -32768},
 				}},
@@ -96,11 +96,11 @@ var (
 	testLambdaExpr = []testStruct{
 		{
 			input: &ast.ListExpr{
-				SubExprList: []ast.Expr{
+				List: []ast.Expr{
 					&ast.LambdaExpr{
-						Args: []*ast.Ident{&ast.Ident{Name: "x"}},
+						Args: []*ast.Ident{ast.NewIdent("x")},
 						Body: []ast.Expr{
-							&ast.Ident{Name: "x"},
+							ast.NewIdent("x"),
 						}},
 					&ast.IntLit{Value: 123},
 				}},
@@ -108,20 +108,20 @@ var (
 		},
 		{
 			input: &ast.ListExpr{
-				SubExprList: []ast.Expr{
+				List: []ast.Expr{
 					&ast.ListExpr{
-						SubExprList: []ast.Expr{
+						List: []ast.Expr{
 							&ast.LambdaExpr{
-								Args: []*ast.Ident{&ast.Ident{Name: "x"}},
+								Args: []*ast.Ident{ast.NewIdent("x")},
 								Body: []ast.Expr{
 									&ast.LambdaExpr{
-										Args: []*ast.Ident{&ast.Ident{Name: "y"}},
+										Args: []*ast.Ident{ast.NewIdent("y")},
 										Body: []ast.Expr{
 											&ast.ListExpr{
-												SubExprList: []ast.Expr{
-													&ast.Ident{Name: "+"},
-													&ast.Ident{Name: "y"},
-													&ast.Ident{Name: "x"},
+												List: []ast.Expr{
+													ast.NewIdent("+"),
+													ast.NewIdent("y"),
+													ast.NewIdent("x"),
 												}}}}}},
 							&ast.IntLit{Value: 32767}}},
 					&ast.IntLit{Value: 32768},
@@ -133,7 +133,7 @@ var (
 	testCondExpr = []testStruct{
 		{
 			input: &ast.CondExpr{
-				BranchList: []*ast.BranchExpr{
+				List: []*ast.BranchExpr{
 					{
 						Condition: &ast.BoolLit{Value: false},
 						Body: []ast.Expr{
@@ -152,7 +152,7 @@ var (
 		},
 		{
 			input: &ast.CondExpr{
-				BranchList: []*ast.BranchExpr{
+				List: []*ast.BranchExpr{
 					{
 						Condition: &ast.BoolLit{Value: false},
 						Body: []ast.Expr{
