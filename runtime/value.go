@@ -8,6 +8,10 @@ import (
 	"github.com/dyzsr/mylisp/ast"
 )
 
+var (
+	symbolMap = ast.NewSymbolMap()
+)
+
 type Value interface {
 	Type() *Type
 }
@@ -24,7 +28,8 @@ type (
 	}
 
 	Pair struct {
-		values [2]Value
+		first  Value
+		second Value
 	}
 
 	BuiltinProc struct {
@@ -42,7 +47,7 @@ type (
 func (Nil) Type() *Type            { return nil }
 func (Bool) Type() *Type           { return nil }
 func (Int) Type() *Type            { return nil }
-func (v *Symbol) Type() *Type      { return nil }
+func (v Symbol) Type() *Type       { return nil }
 func (v *Pair) Type() *Type        { return nil }
 func (v *BuiltinProc) Type() *Type { return nil }
 func (v *Proc) Type() *Type        { return nil }
@@ -59,7 +64,7 @@ func (v Int) String() string {
 	return strconv.FormatInt(int64(v), 10)
 }
 
-func (v *Symbol) String() string {
+func (v Symbol) String() string {
 	return *v.string
 }
 
@@ -67,13 +72,13 @@ func (v *Pair) String() string {
 	var substr []string
 	p := v
 	for {
-		substr = append(substr, fmt.Sprintf("%s", p.values[0]))
-		if _, ok := p.values[1].(Nil); ok {
+		substr = append(substr, fmt.Sprintf("%s", p.first))
+		if _, ok := p.second.(Nil); ok {
 			break
 		}
-		u, ok := p.values[1].(*Pair)
+		u, ok := p.second.(*Pair)
 		if !ok {
-			substr = append(substr, ".", fmt.Sprintf("%s", p.values[1]))
+			substr = append(substr, ".", fmt.Sprintf("%s", p.second))
 			break
 		}
 		p = u

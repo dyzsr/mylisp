@@ -30,26 +30,23 @@ func Test_ValueFormat(t *testing.T) {
 			result: "abc",
 		},
 		{
-			input: &Pair{[2]Value{
-				Int(123),
-				&Pair{[2]Value{
-					Int(456),
-					&Pair{[2]Value{
-						Int(789),
-						Nil{},
-					}},
-				}},
-			}},
+			input: &Pair{
+				first: Int(123),
+				second: &Pair{
+					first: Int(456),
+					second: &Pair{
+						first:  Int(789),
+						second: Nil{},
+					},
+				},
+			},
 			result: "(123 456 789)",
 		},
 		{
-			input: &Pair{[2]Value{
-				&Pair{[2]Value{Bool(true), &Symbol{&symbols[1]}}},
-				&Pair{[2]Value{
-					Int(456),
-					Int(789),
-				}},
-			}},
+			input: &Pair{
+				first:  &Pair{first: Bool(true), second: &Symbol{&symbols[1]}},
+				second: &Pair{first: Int(456), second: Int(789)},
+			},
 			result: "((true . def) 456 . 789)",
 		},
 	}

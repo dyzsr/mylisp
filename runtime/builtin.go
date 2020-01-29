@@ -1,38 +1,54 @@
 package runtime
 
-import "errors"
-
-var (
-	builtinAdd = &BuiltinProc{name: "+", proc: addInt}
-	builtinSub = &BuiltinProc{name: "-", proc: subInt}
-	builtinMul = &BuiltinProc{name: "*", proc: mulInt}
-	builtinDiv = &BuiltinProc{name: "/", proc: divInt}
-	builtinMod = &BuiltinProc{name: "%", proc: modInt}
-	builtinEq  = &BuiltinProc{name: "=", proc: eqInt}
-	builtinLt  = &BuiltinProc{name: "<", proc: ltInt}
-	builtinLte = &BuiltinProc{name: "<=", proc: lteInt}
-	builtinGt  = &BuiltinProc{name: ">", proc: gtInt}
-	builtinGte = &BuiltinProc{name: ">=", proc: gteInt}
-	builtinAnd = &BuiltinProc{name: "&&", proc: andBool}
-	builtinOr  = &BuiltinProc{name: "||", proc: orBool}
-	builtinNot = &BuiltinProc{name: "!", proc: notBool}
+import (
+	"errors"
+	"reflect"
 )
 
-func builtinProcMap() map[string]Value {
+var (
+	builtinAdd   = &BuiltinProc{name: "+", proc: _add}
+	builtinSub   = &BuiltinProc{name: "-", proc: _sub}
+	builtinMul   = &BuiltinProc{name: "*", proc: _mul}
+	builtinDiv   = &BuiltinProc{name: "/", proc: _div}
+	builtinMod   = &BuiltinProc{name: "%", proc: _mod}
+	builtinEqNum = &BuiltinProc{name: "=", proc: _eqNum}
+	builtinLt    = &BuiltinProc{name: "<", proc: _lt}
+	builtinLte   = &BuiltinProc{name: "<=", proc: _lte}
+	builtinGt    = &BuiltinProc{name: ">", proc: _gt}
+	builtinGte   = &BuiltinProc{name: ">=", proc: _gte}
+	builtinAnd   = &BuiltinProc{name: "&&", proc: _and}
+	builtinOr    = &BuiltinProc{name: "||", proc: _or}
+	builtinNot   = &BuiltinProc{name: "!", proc: _not}
+	builtinCons  = &BuiltinProc{name: "cons", proc: _cons}
+	builtinCar   = &BuiltinProc{name: "car", proc: _car}
+	builtinCdr   = &BuiltinProc{name: "cdr", proc: _cdr}
+	builtinList  = &BuiltinProc{name: "list", proc: _list}
+	builtinEq    = &BuiltinProc{name: "eq?", proc: _eq}
+	builtinEqual = &BuiltinProc{name: "equal?", proc: _equal}
+)
+
+func builtinVariables() map[string]Value {
 	return map[string]Value{
-		"+":  builtinAdd,
-		"-":  builtinSub,
-		"*":  builtinMul,
-		"/":  builtinDiv,
-		"%":  builtinMod,
-		"=":  builtinEq,
-		"<":  builtinLt,
-		"<=": builtinLte,
-		">":  builtinGt,
-		">=": builtinGte,
-		"&&": builtinAnd,
-		"||": builtinOr,
-		"!":  builtinNot,
+		"+":      builtinAdd,
+		"-":      builtinSub,
+		"*":      builtinMul,
+		"/":      builtinDiv,
+		"%":      builtinMod,
+		"=":      builtinEqNum,
+		"<":      builtinLt,
+		"<=":     builtinLte,
+		">":      builtinGt,
+		">=":     builtinGte,
+		"&&":     builtinAnd,
+		"||":     builtinOr,
+		"!":      builtinNot,
+		"cons":   builtinCons,
+		"car":    builtinCar,
+		"cdr":    builtinCdr,
+		"list":   builtinList,
+		"eq?":    builtinEq,
+		"equal?": builtinEqual,
+		"nil":    Nil{},
 	}
 }
 
@@ -65,7 +81,7 @@ func toBools(args []Value) ([]Bool, error) {
 	return bools, nil
 }
 
-func addInt(args ...Value) (Value, error) {
+func _add(args ...Value) (Value, error) {
 	nums, err := toInts(args)
 	if err != nil {
 		return nil, err
@@ -77,7 +93,7 @@ func addInt(args ...Value) (Value, error) {
 	return result, nil
 }
 
-func subInt(args ...Value) (Value, error) {
+func _sub(args ...Value) (Value, error) {
 	if len(args) == 0 {
 		return nil, arityMismatchErr
 	}
@@ -100,7 +116,7 @@ func subInt(args ...Value) (Value, error) {
 	return result, nil
 }
 
-func mulInt(args ...Value) (Value, error) {
+func _mul(args ...Value) (Value, error) {
 	nums, err := toInts(args)
 	if err != nil {
 		return nil, err
@@ -112,7 +128,7 @@ func mulInt(args ...Value) (Value, error) {
 	return result, nil
 }
 
-func divInt(args ...Value) (Value, error) {
+func _div(args ...Value) (Value, error) {
 	if len(args) < 2 {
 		return nil, arityMismatchErr
 	}
@@ -128,7 +144,7 @@ func divInt(args ...Value) (Value, error) {
 	return result, nil
 }
 
-func modInt(args ...Value) (Value, error) {
+func _mod(args ...Value) (Value, error) {
 	if len(args) != 2 {
 		return nil, arityMismatchErr
 	}
@@ -140,7 +156,7 @@ func modInt(args ...Value) (Value, error) {
 	return result, nil
 }
 
-func eqInt(args ...Value) (Value, error) {
+func _eqNum(args ...Value) (Value, error) {
 	if len(args) == 0 {
 		return nil, arityMismatchErr
 	}
@@ -157,7 +173,7 @@ func eqInt(args ...Value) (Value, error) {
 	return Bool(true), nil
 }
 
-func ltInt(args ...Value) (Value, error) {
+func _lt(args ...Value) (Value, error) {
 	if len(args) == 0 {
 		return nil, arityMismatchErr
 	}
@@ -174,7 +190,7 @@ func ltInt(args ...Value) (Value, error) {
 	return Bool(true), nil
 }
 
-func lteInt(args ...Value) (Value, error) {
+func _lte(args ...Value) (Value, error) {
 	if len(args) == 0 {
 		return nil, arityMismatchErr
 	}
@@ -191,7 +207,7 @@ func lteInt(args ...Value) (Value, error) {
 	return Bool(true), nil
 }
 
-func gtInt(args ...Value) (Value, error) {
+func _gt(args ...Value) (Value, error) {
 	if len(args) == 0 {
 		return nil, arityMismatchErr
 	}
@@ -208,7 +224,7 @@ func gtInt(args ...Value) (Value, error) {
 	return Bool(true), nil
 }
 
-func gteInt(args ...Value) (Value, error) {
+func _gte(args ...Value) (Value, error) {
 	if len(args) == 0 {
 		return nil, arityMismatchErr
 	}
@@ -225,7 +241,7 @@ func gteInt(args ...Value) (Value, error) {
 	return Bool(true), nil
 }
 
-func andBool(args ...Value) (Value, error) {
+func _and(args ...Value) (Value, error) {
 	bools, err := toBools(args)
 	if err != nil {
 		return nil, err
@@ -238,7 +254,7 @@ func andBool(args ...Value) (Value, error) {
 	return Bool(true), nil
 }
 
-func orBool(args ...Value) (Value, error) {
+func _or(args ...Value) (Value, error) {
 	bools, err := toBools(args)
 	if err != nil {
 		return nil, err
@@ -251,7 +267,7 @@ func orBool(args ...Value) (Value, error) {
 	return Bool(false), nil
 }
 
-func notBool(args ...Value) (Value, error) {
+func _not(args ...Value) (Value, error) {
 	if len(args) != 1 {
 		return nil, arityMismatchErr
 	}
@@ -260,4 +276,59 @@ func notBool(args ...Value) (Value, error) {
 		return nil, err
 	}
 	return !bools[0], nil
+}
+
+func _cons(args ...Value) (Value, error) {
+	if len(args) != 2 {
+		return nil, arityMismatchErr
+	}
+	return &Pair{first: args[0], second: args[1]}, nil
+}
+
+func _car(args ...Value) (Value, error) {
+	if len(args) != 1 {
+		return nil, arityMismatchErr
+	}
+	p, ok := args[0].(*Pair)
+	if !ok {
+		return nil, typeMismatchErr
+	}
+	return p.first, nil
+}
+
+func _cdr(args ...Value) (Value, error) {
+	if len(args) != 1 {
+		return nil, arityMismatchErr
+	}
+	p, ok := args[0].(*Pair)
+	if !ok {
+		return nil, typeMismatchErr
+	}
+	return p.second, nil
+}
+
+func _list(args ...Value) (Value, error) {
+	var result Value = Nil{}
+	for i := len(args) - 1; i >= 0; i-- {
+		var err error
+		result, err = _cons(args[i], result)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return result, nil
+}
+
+func _eq(args ...Value) (Value, error) {
+	if len(args) != 2 {
+		return nil, arityMismatchErr
+	}
+	return Bool(args[0] == args[1]), nil
+}
+
+func _equal(args ...Value) (Value, error) {
+	if len(args) != 2 {
+		return nil, arityMismatchErr
+	}
+	return Bool(reflect.DeepEqual(args[0], args[1])), nil
 }

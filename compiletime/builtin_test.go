@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func Test_parse(t *testing.T) {
+func Test_transform(t *testing.T) {
 	testData := []struct {
 		input  ast.Expr
 		result ast.Expr
@@ -91,6 +91,29 @@ func Test_parse(t *testing.T) {
 									ast.NewIdent("b"),
 									ast.NewIdent("c"),
 								}}},
+					},
+				},
+			},
+		},
+		{
+			input: &ast.ListExpr{
+				List: []ast.Expr{
+					ast.NewIdent("quote"),
+					&ast.ListExpr{
+						List: []ast.Expr{
+							ast.NewIdent("define"),
+							ast.NewIdent("x"),
+							&ast.IntLit{Value: 321},
+						},
+					},
+				},
+			},
+			result: &ast.Quote{
+				Expr: &ast.ListExpr{
+					List: []ast.Expr{
+						ast.NewIdent("define"),
+						ast.NewIdent("x"),
+						&ast.IntLit{Value: 321},
 					},
 				},
 			},

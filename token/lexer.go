@@ -64,7 +64,7 @@ func (l *Lexer) advance() bool {
 	default:
 		if unicode.IsNumber(ch) {
 			tok = l.readNumber(ch)
-		} else if unicode.IsLetter(ch) {
+		} else if unicode.IsLetter(ch) || ch == '_' {
 			tok = l.readIdent(ch)
 		} else {
 			tok = l.readOther(ch)
@@ -104,7 +104,11 @@ func (l *Lexer) readIdent(first rune) Token {
 	value := []rune{first}
 	for ; l.sc.notEof(); l.sc.get() {
 		ch, _ := l.sc.peek()
-		if !(unicode.IsNumber(ch) || unicode.IsLetter(ch)) {
+		if !(unicode.IsNumber(ch) || unicode.IsLetter(ch) || ch == '_') {
+			if ch == '?' || ch == '!' {
+				value = append(value, ch)
+				l.sc.get()
+			}
 			break
 		}
 		value = append(value, ch)
@@ -136,9 +140,9 @@ func (l *Lexer) readOther(first rune) Token {
 
 	var tok Token
 	switch first {
-	case '`':
+	case '\'':
 		tok = QUOTE
-		l.node = ast.NewIdent("`")
+		l.node = ast.NewIdent("'")
 	case '+':
 		tok = PLUS
 		l.node = ast.NewIdent("+")

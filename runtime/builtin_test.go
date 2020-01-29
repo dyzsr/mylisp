@@ -47,12 +47,12 @@ func Test_evalBuiltinProc(t *testing.T) {
 			Int(-2),
 		},
 		{
-			builtinEq,
+			builtinEqNum,
 			[]Value{Int(123), Int(123), Int(123)},
 			Bool(true),
 		},
 		{
-			builtinEq,
+			builtinEqNum,
 			[]Value{Int(123), Int(456), Int(123)},
 			Bool(false),
 		},
@@ -126,12 +126,57 @@ func Test_evalBuiltinProc(t *testing.T) {
 			[]Value{Bool(true)},
 			Bool(false),
 		},
+		{
+			builtinCons,
+			[]Value{Int(1), Int(2)},
+			&Pair{first: Int(1), second: Int(2)},
+		},
+		{
+			builtinCons,
+			[]Value{Int(1), &Pair{first: Int(2), second: Int(3)}},
+			&Pair{first: Int(1), second: &Pair{first: Int(2), second: Int(3)}},
+		},
+		{
+			builtinCar,
+			[]Value{&Pair{first: Int(1), second: Int(2)}},
+			Int(1),
+		},
+		{
+			builtinCdr,
+			[]Value{&Pair{first: Int(1), second: Int(2)}},
+			Int(2),
+		},
+		{
+			builtinList,
+			[]Value{Int(1), Int(2), Int(3), Int(4)},
+			&Pair{first: Int(1), second: &Pair{first: Int(2), second: &Pair{first: Int(3), second: &Pair{first: Int(4), second: Nil{}}}}},
+		},
+		{
+			builtinEq,
+			[]Value{Symbol{symbolMap("a")}, Symbol{symbolMap("a")}},
+			Bool(true),
+		},
+		{
+			builtinEq,
+			[]Value{&Pair{first: Symbol{symbolMap("a")}, second: Symbol{symbolMap("b")}}, &Pair{first: Symbol{symbolMap("a")}, second: Symbol{symbolMap("b")}}},
+			Bool(false),
+		},
+		{
+			builtinEqual,
+			[]Value{&Pair{first: Symbol{symbolMap("a")}, second: Symbol{symbolMap("b")}}, &Pair{first: Symbol{symbolMap("a")}, second: Symbol{symbolMap("b")}}},
+			Bool(true),
+		},
+		{
+			builtinEqual,
+			[]Value{&Pair{first: Symbol{symbolMap("a")}, second: Symbol{symbolMap("b")}}, &Pair{first: Symbol{symbolMap("a")}, second: Symbol{symbolMap("c")}}},
+			Bool(false),
+		},
 	}
 
 	for _, test := range testData {
 		result, err := evalBuiltinProc(test.op, test.operands...)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("\nerror: %s\ninput: {%s, %s}", err, test.op, test.operands)
 			break
 		}
 		if !reflect.DeepEqual(result, test.result) {

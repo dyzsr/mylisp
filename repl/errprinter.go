@@ -12,5 +12,5 @@ func NewErrorPrinter() *ErrorPrinter {
 }
 
 func (p *ErrorPrinter) Print(err error) {
-	fmt.Fprintf(os.Stderr, "! %s\n", err)
+	fmt.Fprintf(os.Stderr, "~ %s\n", err)
 }

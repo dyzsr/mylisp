@@ -37,6 +37,11 @@ type (
 		Value Expr
 	}
 
+	SetExpr struct {
+		Ident *Ident
+		Value Expr
+	}
+
 	LambdaExpr struct {
 		Args []*Ident
 		Body []Expr
@@ -55,18 +60,22 @@ type (
 
 func (e *BoolLit) Pos() *Pos    { return nil }
 func (e *IntLit) Pos() *Pos     { return nil }
+func (e *Quote) Pos() *Pos      { return nil }
 func (e *Ident) Pos() *Pos      { return nil }
 func (e *ListExpr) Pos() *Pos   { return nil }
 func (e *DefineExpr) Pos() *Pos { return nil }
+func (e *SetExpr) Pos() *Pos    { return nil }
 func (e *LambdaExpr) Pos() *Pos { return nil }
 func (e *CondExpr) Pos() *Pos   { return nil }
 func (e *BranchExpr) Pos() *Pos { return nil }
 
 func (e *BoolLit) End() *Pos    { return nil }
 func (e *IntLit) End() *Pos     { return nil }
+func (e *Quote) End() *Pos      { return nil }
 func (e *Ident) End() *Pos      { return nil }
 func (e *ListExpr) End() *Pos   { return nil }
 func (e *DefineExpr) End() *Pos { return nil }
+func (e *SetExpr) End() *Pos    { return nil }
 func (e *LambdaExpr) End() *Pos { return nil }
 func (e *CondExpr) End() *Pos   { return nil }
 func (e *BranchExpr) End() *Pos { return nil }
@@ -85,6 +94,10 @@ func (e *IntLit) String() string {
 	return strconv.FormatInt(e.Value, 10)
 }
 
+func (e *Quote) String() string {
+	return fmt.Sprintf("'%s", e.Expr)
+}
+
 func (e *Ident) String() string {
 	return *e.Name
 }
@@ -99,6 +112,10 @@ func (e *ListExpr) String() string {
 
 func (e *DefineExpr) String() string {
 	return fmt.Sprintf("(define %s %s)", e.Ident, e.Value)
+}
+
+func (e *SetExpr) String() string {
+	return fmt.Sprintf("(set! %s %s)", e.Ident, e.Value)
 }
 
 func (e *LambdaExpr) String() string {
