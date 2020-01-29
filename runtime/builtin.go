@@ -10,15 +10,15 @@ var (
 	builtinSub   = &BuiltinProc{name: "-", proc: _sub}
 	builtinMul   = &BuiltinProc{name: "*", proc: _mul}
 	builtinDiv   = &BuiltinProc{name: "/", proc: _div}
-	builtinMod   = &BuiltinProc{name: "%", proc: _mod}
+	builtinMod   = &BuiltinProc{name: "mod", proc: _mod}
 	builtinEqNum = &BuiltinProc{name: "=", proc: _eqNum}
 	builtinLt    = &BuiltinProc{name: "<", proc: _lt}
 	builtinLte   = &BuiltinProc{name: "<=", proc: _lte}
 	builtinGt    = &BuiltinProc{name: ">", proc: _gt}
 	builtinGte   = &BuiltinProc{name: ">=", proc: _gte}
-	builtinAnd   = &BuiltinProc{name: "&&", proc: _and}
-	builtinOr    = &BuiltinProc{name: "||", proc: _or}
-	builtinNot   = &BuiltinProc{name: "!", proc: _not}
+	builtinAnd   = &BuiltinProc{name: "and", proc: _and}
+	builtinOr    = &BuiltinProc{name: "or", proc: _or}
+	builtinNot   = &BuiltinProc{name: "not", proc: _not}
 	builtinCons  = &BuiltinProc{name: "cons", proc: _cons}
 	builtinCar   = &BuiltinProc{name: "car", proc: _car}
 	builtinCdr   = &BuiltinProc{name: "cdr", proc: _cdr}
@@ -33,15 +33,15 @@ func builtinVariables() map[string]Value {
 		"-":      builtinSub,
 		"*":      builtinMul,
 		"/":      builtinDiv,
-		"%":      builtinMod,
+		"mod":    builtinMod,
 		"=":      builtinEqNum,
 		"<":      builtinLt,
 		"<=":     builtinLte,
 		">":      builtinGt,
 		">=":     builtinGte,
-		"&&":     builtinAnd,
-		"||":     builtinOr,
-		"!":      builtinNot,
+		"and":    builtinAnd,
+		"or":     builtinOr,
+		"not":    builtinNot,
 		"cons":   builtinCons,
 		"car":    builtinCar,
 		"cdr":    builtinCdr,

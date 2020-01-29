@@ -19,7 +19,7 @@ const (
 	MINUS
 	ASTER
 	SLASH
-	PERCENT
+	MOD
 	EQ
 	LT
 	LTE
@@ -45,7 +45,7 @@ var (
 		MINUS:   "-",
 		ASTER:   "*",
 		SLASH:   "/",
-		PERCENT: "%",
+		MOD:     "%",
 		EQ:      "=",
 		LT:      "<",
 		LTE:     "<=",

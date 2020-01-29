@@ -155,9 +155,6 @@ func (l *Lexer) readOther(first rune) Token {
 	case '/':
 		tok = SLASH
 		l.node = ast.NewIdent("/")
-	case '%':
-		tok = PERCENT
-		l.node = ast.NewIdent("%")
 	case '=':
 		tok = EQ
 		l.node = ast.NewIdent("=")
@@ -183,25 +180,6 @@ func (l *Lexer) readOther(first rune) Token {
 			l.node = ast.NewIdent(">=")
 			l.sc.get()
 		}
-	case '&':
-		if !ok || ch != '&' {
-			tok = ILLEGAL
-		} else {
-			tok = AND
-			l.node = ast.NewIdent("&&")
-			l.sc.get()
-		}
-	case '|':
-		if !ok || ch != '|' {
-			tok = ILLEGAL
-		} else {
-			tok = OR
-			l.node = ast.NewIdent("||")
-			l.sc.get()
-		}
-	case '!':
-		tok = NOT
-		l.node = ast.NewIdent("!")
 	}
 
 	return tok
@@ -213,6 +191,18 @@ func (l *Lexer) lookup(ident string) Token {
 		return TRUE
 	case "false":
 		return FALSE
+	case "mod":
+		l.node = ast.NewIdent("mod")
+		return MOD
+	case "and":
+		l.node = ast.NewIdent("and")
+		return AND
+	case "or":
+		l.node = ast.NewIdent("or")
+		return OR
+	case "not":
+		l.node = ast.NewIdent("not")
+		return NOT
 	default:
 		return IDENT
 	}
