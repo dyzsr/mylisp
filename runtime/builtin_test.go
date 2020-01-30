@@ -173,8 +173,9 @@ func Test_evalBuiltinProc(t *testing.T) {
 		},
 	}
 
+	r := NewRuntime()
 	for _, test := range testData {
-		result, err := evalBuiltinProc(test.op, test.operands...)
+		result, err := r.evalBuiltinProc(test.op, test.operands...)
 		if err != nil {
 			t.Errorf("\nerror: %s\ninput: {%s, %s}", err, test.op, test.operands)
 			break

@@ -8,7 +8,10 @@ import (
 )
 
 type Runtime struct {
-	scope *ast.Scope
+	scope       *ast.Scope // variable binding scope
+	stack       *callstack // procedure calls stack
+	lastInScope bool       // is the last expression in a scope
+	enableTCOpt bool       // enable tail call optimization
 }
 
 func NewRuntime() *Runtime {
@@ -17,15 +20,17 @@ func NewRuntime() *Runtime {
 		scope.Insert(ast.SymbolMap(k), v)
 	}
 	return &Runtime{
-		scope: scope,
+		scope:       scope,
+		stack:       newCallstack(),
+		enableTCOpt: true,
 	}
 }
 
 func (r *Runtime) Eval(input ast.Expr) (Value, error) {
-	return eval(r.scope, input)
+	return r.eval(r.scope, input)
 }
 
-func eval(scope *ast.Scope, input ast.Expr) (Value, error) {
+func (r *Runtime) eval(scope *ast.Scope, input ast.Expr) (Value, error) {
 	if input == nil {
 		return nil, nil
 	}
@@ -36,24 +41,24 @@ func eval(scope *ast.Scope, input ast.Expr) (Value, error) {
 	case *ast.IntLit:
 		return Int(expr.Value), nil
 	case *ast.Quote:
-		return evalQuote(scope, expr)
+		return r.evalQuote(scope, expr)
 	case *ast.Ident:
-		return evalIdent(scope, expr)
+		return r.evalIdent(scope, expr)
 	case *ast.ListExpr:
-		return evalListExpr(scope, expr)
+		return r.evalListExpr(scope, expr)
 	case *ast.DefineExpr:
-		return evalDefineExpr(scope, expr)
+		return r.evalDefineExpr(scope, expr)
 	case *ast.SetExpr:
-		return evalSetExpr(scope, expr)
+		return r.evalSetExpr(scope, expr)
 	case *ast.LambdaExpr:
-		return evalLambdaExpr(scope, expr)
+		return r.evalLambdaExpr(scope, expr)
 	case *ast.CondExpr:
-		return evalCondExpr(scope, expr)
+		return r.evalCondExpr(scope, expr)
 	}
 	return nil, errors.New("error: cannot eval input")
 }
 
-func evalQuote(scope *ast.Scope, quote *ast.Quote) (Value, error) {
+func (r *Runtime) evalQuote(scope *ast.Scope, quote *ast.Quote) (Value, error) {
 	switch expr := quote.Expr.(type) {
 	case *ast.BoolLit:
 		return Bool(expr.Value), nil
@@ -64,7 +69,7 @@ func evalQuote(scope *ast.Scope, quote *ast.Quote) (Value, error) {
 	case *ast.ListExpr:
 		var args []Value
 		for _, expr := range expr.List {
-			value, err := evalQuote(scope, &ast.Quote{Expr: expr})
+			value, err := r.evalQuote(scope, &ast.Quote{Expr: expr})
 			if err != nil {
 				return nil, err
 			}
@@ -75,7 +80,7 @@ func evalQuote(scope *ast.Scope, quote *ast.Quote) (Value, error) {
 	return nil, errors.New("quote: bad value")
 }
 
-func evalIdent(scope *ast.Scope, ident *ast.Ident) (Value, error) {
+func (r *Runtime) evalIdent(scope *ast.Scope, ident *ast.Ident) (Value, error) {
 	value, ok := scope.Lookup(ident.Name)
 	if !ok {
 		return nil, fmt.Errorf("%s: undefined", *ident.Name)
@@ -83,14 +88,23 @@ func evalIdent(scope *ast.Scope, ident *ast.Ident) (Value, error) {
 	return value.(Value), nil
 }
 
-func evalListExpr(scope *ast.Scope, listExpr *ast.ListExpr) (Value, error) {
+func (r *Runtime) evalListExpr(scope *ast.Scope, listExpr *ast.ListExpr) (Value, error) {
 	if len(listExpr.List) == 0 {
 		return nil, errors.New("missing procedure expression")
 	}
+
+	var tailcall bool
+	if r.enableTCOpt && !r.stack.empty() && r.stack.last() && r.lastInScope {
+		// mark tailcall when requirements are satisfied
+		tailcall = true
+		// turn off the flag since a list expression (procedure call) is not a scope
+		r.lastInScope = false
+	}
+
 	valueList := make([]Value, len(listExpr.List))
-	for i, subExpr := range listExpr.List {
+	for i, expr := range listExpr.List {
 		var err error
-		valueList[i], err = eval(scope, subExpr)
+		valueList[i], err = r.eval(scope, expr)
 		if err != nil {
 			return nil, err
 		}
@@ -101,38 +115,22 @@ func evalListExpr(scope *ast.Scope, listExpr *ast.ListExpr) (Value, error) {
 
 	switch op := operator.(type) {
 	case *BuiltinProc:
-		return evalBuiltinProc(op, operands...)
+		return r.evalBuiltinProc(op, operands...)
 	case *Proc:
-		return evalProc(op, operands...)
+		if tailcall {
+			r.stack.modify(op, operands)
+			return nil, nil
+		}
+		r.stack.push(op, operands)
+		result, err := r.evalProc(op, operands...)
+		r.stack.pop()
+		return result, err
 	}
 	return nil, errors.New("not a procedure")
 }
 
-func evalBuiltinProc(op *BuiltinProc, operands ...Value) (value Value, err error) {
-	return op.proc(operands...)
-}
-
-func evalProc(proc *Proc, operands ...Value) (Value, error) {
-	if len(proc.Args) != len(operands) {
-		return nil, arityMismatchErr
-	}
-	scope := ast.NewScope(proc.outer)
-	for i, arg := range proc.Args {
-		scope.Insert(arg.Name, operands[i])
-	}
-	var result Value
-	for _, expr := range proc.Body {
-		var err error
-		result, err = eval(scope, expr)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return result, nil
-}
-
-func evalDefineExpr(scope *ast.Scope, defineExpr *ast.DefineExpr) (Value, error) {
-	value, err := eval(scope, defineExpr.Value)
+func (r *Runtime) evalDefineExpr(scope *ast.Scope, defineExpr *ast.DefineExpr) (Value, error) {
+	value, err := r.eval(scope, defineExpr.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -143,8 +141,8 @@ func evalDefineExpr(scope *ast.Scope, defineExpr *ast.DefineExpr) (Value, error)
 	return nil, nil
 }
 
-func evalSetExpr(scope *ast.Scope, setExpr *ast.SetExpr) (Value, error) {
-	value, err := eval(scope, setExpr.Value)
+func (r *Runtime) evalSetExpr(scope *ast.Scope, setExpr *ast.SetExpr) (Value, error) {
+	value, err := r.eval(scope, setExpr.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -157,17 +155,17 @@ func evalSetExpr(scope *ast.Scope, setExpr *ast.SetExpr) (Value, error) {
 	return nil, nil
 }
 
-func evalLambdaExpr(scope *ast.Scope, lambdaExpr *ast.LambdaExpr) (Value, error) {
+func (r *Runtime) evalLambdaExpr(scope *ast.Scope, lambdaExpr *ast.LambdaExpr) (Value, error) {
 	return &Proc{
 		LambdaExpr: lambdaExpr,
 		outer:      scope,
 	}, nil
 }
 
-func evalCondExpr(scope *ast.Scope, condExpr *ast.CondExpr) (Value, error) {
+func (r *Runtime) evalCondExpr(scope *ast.Scope, condExpr *ast.CondExpr) (Value, error) {
 	for _, branch := range condExpr.List {
 		if !branch.Else {
-			condValue, err := eval(scope, branch.Condition)
+			condValue, err := r.eval(scope, branch.Condition)
 			if err != nil {
 				return nil, err
 			}
@@ -180,16 +178,64 @@ func evalCondExpr(scope *ast.Scope, condExpr *ast.CondExpr) (Value, error) {
 			}
 		}
 
-		var result Value
 		inner := ast.NewScope(scope)
-		for _, expr := range branch.Body {
-			var err error
-			result, err = eval(inner, expr)
-			if err != nil {
-				return nil, err
-			}
-		}
-		return result, nil
+		return r.evalScope(inner, false, branch.Body)
 	}
 	return nil, nil
+}
+
+func (r *Runtime) evalBuiltinProc(op *BuiltinProc, operands ...Value) (value Value, err error) {
+	return op.proc(operands...)
+}
+
+func (r *Runtime) evalProc(proc *Proc, operands ...Value) (Value, error) {
+	// println("callstack depth:", len(r.stack.frames))
+	for {
+		if r.stack.modified() {
+			topFrame := r.stack.top()
+			proc, operands = topFrame.proc, topFrame.params
+			r.stack.unmodify()
+		}
+
+		if len(proc.Args) != len(operands) {
+			return nil, arityMismatchErr
+		}
+		scope := ast.NewScope(proc.outer)
+		for i, arg := range proc.Args {
+			scope.Insert(arg.Name, operands[i])
+		}
+
+		result, err := r.evalScope(scope, true, proc.Body)
+		if r.stack.modified() {
+			continue
+		}
+		return result, err
+	}
+}
+
+func (r *Runtime) evalScope(scope *ast.Scope, isProc bool, list []ast.Expr) (Value, error) {
+	// turn off the flag when entering a new scope
+	r.lastInScope = false
+
+	var result Value
+	for i, expr := range list {
+		if i == len(list)-1 {
+			// turn on the flag if it is last in the scope
+			r.lastInScope = true
+			if isProc {
+				r.stack.setLast(true)
+			}
+		}
+
+		var err error
+		result, err = r.eval(scope, expr)
+
+		// restore the flag after being used
+		r.lastInScope = false
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	return result, nil
 }
