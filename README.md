@@ -8,13 +8,13 @@ _MyLisp_ is a general purposed, strongly typed programming language, which
 performs dynamic type checking just like other _Scheme_ dialects.
 
 Currently support:
-- a REPL user interface
+- an interactive console UI
 - datatype: 64-bit integers, booleans, symbols, pairs, procedures & closures
-- syntax: `define`, `lambda`, `cond`, `quote`
+- syntax: `define`, `lambda`, `cond`, `quote`, `set!`
 
-## Syntax
+# Syntax
 
-### Literals
+## Literals
 
 ``` scheme
 123     ; integer
@@ -22,7 +22,7 @@ true    ; boolean
 'abc    ; symbol
 ```
 
-### Identifiers
+## Identifiers
 
 keywords:
 ```
@@ -39,10 +39,9 @@ b     ; variable b
 foo   ; variable foo
 ```
 
-### Procedure calls
+## Procedure calls
 
-basic procedure calls: 
-`+` `-` `*` `/` `mod` `=` `<` `<=` `>` `>=` `and` `or` `not` `eq?` `equal?` `cons` `car` `cdr` `list`
+built-in procedure calls
 
 ``` scheme
 (+ a b c)          ; add
@@ -75,7 +74,7 @@ regular procedure calls
 (display (list 1 2 3))
 ```
 
-### Definitions
+## Definitions
 
 variable definitions: start with keyword `define`
 
@@ -88,7 +87,7 @@ variable definitions: start with keyword `define`
 (define S (lambda (x) (lambda (y) (lambda (z) ((x z) (y z))))))
 ```
 
-### Assignments
+## Assignments
 
 variable assignment: start with keyword `set!`
 
@@ -104,7 +103,7 @@ x    ; 456
 p    ; (1 . 3)
 ```
 
-### Lambda expressions
+## Lambda expressions
 
 ``` scheme
 (lambda () 123)           ; constant procedure
@@ -112,7 +111,7 @@ p    ; (1 . 3)
 (lambda (x y) (+ x y))    ; with 2 arguments
 ```
 
-### Conditional expressions
+## Conditional expressions
 
 ``` scheme
 (define a 4)
@@ -131,7 +130,7 @@ p    ; (1 . 3)
 (gcd 64 48)      ; 16
 ```
 
-### Quoting and `'`
+## Quoting and `'`
 
 The quoting syntax is like `(quote expr)`, where `expr` is either atom or a list expression.
 `'expr` is a shorthand for `(quote expr)`, and the former will be expanded into the latter during parsing.
@@ -149,37 +148,39 @@ When:
 '(a b 'c)        ; (a b (quote c))
 ```
 
-## Implementation
+# Implementation
 
-An expression will go through the following processes after typed into the interpreter:
-
+An expression will go through the following processes after typed into the interpreter:<br>
 `lexer` => `parser` => `compiletime` => `runtime` => `printer`
 
-### Lexer
+## Lexer
 
 The `lexer` converts input character stream into token streams.
 
-### Parser
+## Parser
 
-The `parser` converts token stream into list expressions.
+The `parser` converts token stream into list expressions. It expands all expressions in the form of `'expr` into `(quote expr)`.
 
-### Compile time
+## Compile time
 
-The `compiletime` performs transformations on list expressions. It outputs AST nodes for the `runtime`.
+The `compiletime` performs transformations on list expressions. It outputs AST nodes for the `runtime`. Syntaxes like `define`, `lambda` are built-in transformers in the `compiletime`.
 
-### Runtime
+## Runtime
 
-The `runtime` evaluate AST nodes and outputs runtime values.
+The `runtime` evaluates AST nodes and outputs runtime values.
 
-### Printer
+There is tail call optimization for procedure calls as the last expression inside a 
+procedure's body.
 
-The `printer` print runtime values to the console.
+## Printer
 
-## Examples
+The `printer` prints runtime values to the console.
+
+# Examples
 
 Church numerals
 
-```
+``` scheme
 (define n0 (lambda (f) (lambda (x) x)))
 (define n1 (lambda (f) (lambda (x) (f x))))
 (define show (lambda (n) ((n (lambda (x) (+ x 1))) 0)))
@@ -215,7 +216,7 @@ $ 65536
 
 Message-passing style OOP
 
-```
+``` scheme
 (define NewProfile
  (lambda ()
   (define id 0)
