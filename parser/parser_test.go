@@ -1,11 +1,12 @@
 package parser
 
 import (
-	"github.com/dyzsr/mylisp/ast"
-	"github.com/dyzsr/mylisp/token"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/dyzsr/mylisp/ast"
+	"github.com/dyzsr/mylisp/token"
 )
 
 func Test_next(t *testing.T) {
@@ -32,7 +33,7 @@ func Test_next(t *testing.T) {
 			},
 		},
 		{
-			input: "(article `SetTime `(2020 1 23 22 42))",
+			input: "(article 'SetTime '(2020 1 23 22 42))",
 			result: &ast.ListExpr{
 				List: []ast.Expr{
 					ast.NewIdent("article"),

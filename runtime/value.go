@@ -13,7 +13,7 @@ var (
 )
 
 type Value interface {
-	Type() *Type
+	Type() Type
 }
 
 type (
@@ -35,22 +35,24 @@ type (
 	BuiltinProc struct {
 		name string
 		proc func(...Value) (Value, error)
+		typ  Type
 	}
 
 	Proc struct {
 		name  *string
 		outer *ast.Scope
 		*ast.LambdaExpr
+		typ Type
 	}
 )
 
-func (Nil) Type() *Type            { return nil }
-func (Bool) Type() *Type           { return nil }
-func (Int) Type() *Type            { return nil }
-func (v Symbol) Type() *Type       { return nil }
-func (v *Pair) Type() *Type        { return nil }
-func (v *BuiltinProc) Type() *Type { return nil }
-func (v *Proc) Type() *Type        { return nil }
+func (Nil) Type() Type            { return TypeNil }
+func (Bool) Type() Type           { return TypeBool }
+func (Int) Type() Type            { return TypeInt }
+func (v Symbol) Type() Type       { return TypeSymbol }
+func (v *Pair) Type() Type        { return TypePair }
+func (v *BuiltinProc) Type() Type { return v.typ }
+func (v *Proc) Type() Type        { return v.typ }
 
 func (Nil) String() string {
 	return "nil"

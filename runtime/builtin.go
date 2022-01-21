@@ -53,8 +53,8 @@ func builtinVariables() map[string]Value {
 }
 
 var (
-	typeMismatchErr  = errors.New("operand types mismatch")
-	arityMismatchErr = errors.New("arity mismatch")
+	errTypeMismatch  = errors.New("operand types mismatch")
+	errArityMismatch = errors.New("arity mismatch")
 )
 
 func toInts(args []Value) ([]Int, error) {
@@ -62,7 +62,7 @@ func toInts(args []Value) ([]Int, error) {
 	for _, arg := range args {
 		num, ok := arg.(Int)
 		if !ok {
-			return nil, typeMismatchErr
+			return nil, errTypeMismatch
 		}
 		nums = append(nums, num)
 	}
@@ -74,7 +74,7 @@ func toBools(args []Value) ([]Bool, error) {
 	for _, arg := range args {
 		bol, ok := arg.(Bool)
 		if !ok {
-			return nil, typeMismatchErr
+			return nil, errTypeMismatch
 		}
 		bools = append(bools, bol)
 	}
@@ -95,7 +95,7 @@ func _add(args ...Value) (Value, error) {
 
 func _sub(args ...Value) (Value, error) {
 	if len(args) == 0 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -130,7 +130,7 @@ func _mul(args ...Value) (Value, error) {
 
 func _div(args ...Value) (Value, error) {
 	if len(args) < 2 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -146,7 +146,7 @@ func _div(args ...Value) (Value, error) {
 
 func _mod(args ...Value) (Value, error) {
 	if len(args) != 2 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -158,7 +158,7 @@ func _mod(args ...Value) (Value, error) {
 
 func _eqNum(args ...Value) (Value, error) {
 	if len(args) == 0 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -175,7 +175,7 @@ func _eqNum(args ...Value) (Value, error) {
 
 func _lt(args ...Value) (Value, error) {
 	if len(args) == 0 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -192,7 +192,7 @@ func _lt(args ...Value) (Value, error) {
 
 func _lte(args ...Value) (Value, error) {
 	if len(args) == 0 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -209,7 +209,7 @@ func _lte(args ...Value) (Value, error) {
 
 func _gt(args ...Value) (Value, error) {
 	if len(args) == 0 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -226,7 +226,7 @@ func _gt(args ...Value) (Value, error) {
 
 func _gte(args ...Value) (Value, error) {
 	if len(args) == 0 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	nums, err := toInts(args)
 	if err != nil {
@@ -269,7 +269,7 @@ func _or(args ...Value) (Value, error) {
 
 func _not(args ...Value) (Value, error) {
 	if len(args) != 1 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	bools, err := toBools(args)
 	if err != nil {
@@ -280,29 +280,29 @@ func _not(args ...Value) (Value, error) {
 
 func _cons(args ...Value) (Value, error) {
 	if len(args) != 2 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	return &Pair{first: args[0], second: args[1]}, nil
 }
 
 func _car(args ...Value) (Value, error) {
 	if len(args) != 1 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	p, ok := args[0].(*Pair)
 	if !ok {
-		return nil, typeMismatchErr
+		return nil, errTypeMismatch
 	}
 	return p.first, nil
 }
 
 func _cdr(args ...Value) (Value, error) {
 	if len(args) != 1 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	p, ok := args[0].(*Pair)
 	if !ok {
-		return nil, typeMismatchErr
+		return nil, errTypeMismatch
 	}
 	return p.second, nil
 }
@@ -321,14 +321,14 @@ func _list(args ...Value) (Value, error) {
 
 func _eq(args ...Value) (Value, error) {
 	if len(args) != 2 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	return Bool(args[0] == args[1]), nil
 }
 
 func _equal(args ...Value) (Value, error) {
 	if len(args) != 2 {
-		return nil, arityMismatchErr
+		return nil, errArityMismatch
 	}
 	return Bool(reflect.DeepEqual(args[0], args[1])), nil
 }

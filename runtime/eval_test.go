@@ -66,14 +66,14 @@ var (
 				Ident: ast.NewIdent("x"),
 				Value: &ast.IntLit{Value: 32768},
 			},
-			result: nil,
+			result: Nil{},
 		},
 		{
 			input: &ast.DefineExpr{
 				Ident: ast.NewIdent("y"),
 				Value: &ast.IntLit{Value: 123},
 			},
-			result: nil,
+			result: Nil{},
 		},
 		{
 			input:  ast.NewIdent("x"),
@@ -88,7 +88,7 @@ var (
 				Ident: ast.NewIdent("x"),
 				Value: &ast.IntLit{Value: -32768},
 			},
-			result: nil,
+			result: Nil{},
 		},
 		{
 			input:  ast.NewIdent("x"),
@@ -102,7 +102,7 @@ var (
 				Ident: ast.NewIdent("x"),
 				Value: &ast.IntLit{Value: 32768},
 			},
-			result: nil,
+			result: Nil{},
 		},
 		{
 			input:  ast.NewIdent("x"),
@@ -113,7 +113,7 @@ var (
 				Ident: ast.NewIdent("x"),
 				Value: &ast.IntLit{Value: -32768},
 			},
-			result: nil,
+			result: Nil{},
 		},
 		{
 			input:  ast.NewIdent("x"),
@@ -261,6 +261,7 @@ var (
 				          (else (iter (- i 1) (* i res))))))
 				  (iter x 1)))
 				 `,
+			result: Nil{},
 		},
 		{str: "(fac 5)", result: Int(120)},
 		{str: "(fac 15)", result: Int(1307674368000)},
@@ -275,27 +276,28 @@ var (
 				          (else (iter (- i 1) (+ res i))))))
 				  (iter n 0)))
 			`,
+			result: Nil{},
 		},
 		{str: "(sum 10)", result: Int(55)},
 		{str: "(sum 10000)", result: Int(50005000)},
 	}
 
 	testChurchNumeral = []testStruct{
-		{str: "(define n0 (lambda (f) (lambda (x) x)))"},
-		{str: "(define n1 (lambda (f) (lambda (x) (f x))))"},
-		{str: "(define show (lambda (n) ((n (lambda (x) (+ x 1))) 0)))"},
-		{str: "(define add (lambda (a b) (lambda (f) (lambda (x) ((a f) ((b f) x))))))"},
-		{str: "(define mul (lambda (a b) (lambda (f) (lambda (x) ((a (b f)) x)))))"},
-		{str: "(define n2 (add n1 n1))"},
-		{str: "(define n3 (add n1 n2))"},
-		{str: "(define n4 (add n2 n2))"},
-		{str: "(define n5 (add n2 n3))"},
-		{str: "(define n8 (add n3 n5))"},
-		{str: "(define n13 (add n5 n8))"},
-		{str: "(define n65 (mul n5 n13))"},
-		{str: "(define n32 (mul n4 n8))"},
-		{str: "(define n64 (mul n8 n8))"},
-		{str: "(define n1024 (mul n32 n32))"},
+		{str: "(define n0 (lambda (f) (lambda (x) x)))", result: Nil{}},
+		{str: "(define n1 (lambda (f) (lambda (x) (f x))))", result: Nil{}},
+		{str: "(define show (lambda (n) ((n (lambda (x) (+ x 1))) 0)))", result: Nil{}},
+		{str: "(define add (lambda (a b) (lambda (f) (lambda (x) ((a f) ((b f) x))))))", result: Nil{}},
+		{str: "(define mul (lambda (a b) (lambda (f) (lambda (x) ((a (b f)) x)))))", result: Nil{}},
+		{str: "(define n2 (add n1 n1))", result: Nil{}},
+		{str: "(define n3 (add n1 n2))", result: Nil{}},
+		{str: "(define n4 (add n2 n2))", result: Nil{}},
+		{str: "(define n5 (add n2 n3))", result: Nil{}},
+		{str: "(define n8 (add n3 n5))", result: Nil{}},
+		{str: "(define n13 (add n5 n8))", result: Nil{}},
+		{str: "(define n65 (mul n5 n13))", result: Nil{}},
+		{str: "(define n32 (mul n4 n8))", result: Nil{}},
+		{str: "(define n64 (mul n8 n8))", result: Nil{}},
+		{str: "(define n1024 (mul n32 n32))", result: Nil{}},
 		{str: "(show n64)", result: Int(64)},
 		{str: "(show n1024)", result: Int(1024)},
 		{str: "(show n65)", result: Int(65)},
@@ -312,20 +314,22 @@ var (
 			  (cond ((eq? msg 'Id) id)
 					((eq? msg 'SetId) setId)
 					((eq? msg 'Name) name)
-					((eq? msg 'SetName) setName)))))`},
-		{str: "(define p (NewProfile))"},
+					((eq? msg 'SetName) setName)))))`,
+			result: Nil{}},
+		{str: "(define p (NewProfile))", result: Nil{}},
 		{str: "(p 'Id)", result: Int(0)},
-		{str: "((p 'SetId) 1)"},
+		{str: "((p 'SetId) 1)", result: Nil{}},
 		{str: "(p 'Id)", result: Int(1)},
 		{str: "(p 'Name)", result: Symbol{symbolMap("name")}},
-		{str: "((p 'SetName) 'dy)"},
+		{str: "((p 'SetName) 'dy)", result: Nil{}},
 		{str: "(p 'Name)", result: Symbol{symbolMap("dy")}},
 	}
 
 	testFibonacci = []testStruct{
 		{str: `(define fib (lambda (n)
 				(cond ((< n 2) 1)
-					(else (+ (fib (- n 1)) (fib (- n 2)))))))`},
+					(else (+ (fib (- n 1)) (fib (- n 2)))))))`,
+			result: Nil{}},
 		{str: "(fib 10)", result: Int(89)},
 		{str: "(fib 15)", result: Int(987)},
 		{str: "(fib 20)", result: Int(10946)},

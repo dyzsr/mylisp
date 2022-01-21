@@ -25,7 +25,7 @@ var (
 			},
 		},
 		{
-			input: "(+ x (- y 1) (* a (/ b 2) (% c 2)))",
+			input: "(+ x (- y 1) (* a (/ b 2) (mod c 2)))",
 			result: []Token{
 				LPAREN, PLUS, IDENT, LPAREN, MINUS, IDENT, INTEGER, RPAREN,
 				LPAREN, ASTER, IDENT, LPAREN, SLASH, IDENT, INTEGER, RPAREN,
@@ -33,7 +33,7 @@ var (
 			},
 		},
 		{
-			input: "(&& (= x y) (! (< y 1)) (|| (<= z 9) (> a b c) (>= d e f)))",
+			input: "(and (= x y) (not (< y 1)) (or (<= z 9) (> a b c) (>= d e f)))",
 			result: []Token{
 				LPAREN, AND, LPAREN, EQ, IDENT, IDENT, RPAREN, LPAREN, NOT, LPAREN, LT, IDENT, INTEGER, RPAREN, RPAREN,
 				LPAREN, OR, LPAREN, LTE, IDENT, INTEGER, RPAREN, LPAREN, GT, IDENT, IDENT, IDENT, RPAREN,
@@ -41,7 +41,7 @@ var (
 			},
 		},
 		{
-			input: "`(a b `(d `x `y) `(123 456 `789))",
+			input: "'(a b '(d 'x 'y) '(123 456 '789))",
 			result: []Token{
 				QUOTE, LPAREN, IDENT, IDENT, QUOTE, LPAREN, IDENT, QUOTE, IDENT, QUOTE, IDENT, RPAREN,
 				QUOTE, LPAREN, INTEGER, INTEGER, QUOTE, INTEGER, RPAREN, RPAREN,

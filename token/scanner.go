@@ -65,6 +65,7 @@ func (sc *scanner) load() {
 		return
 	}
 
+	// reached EOF
 	if !sc.rd.Scan() && sc.rd.Err() == nil {
 		sc.offset = 0
 		sc.size = 0

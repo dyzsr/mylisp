@@ -1,9 +1,10 @@
 package token
 
 import (
-	"github.com/dyzsr/mylisp/ast"
 	"io"
 	"unicode"
+
+	"github.com/dyzsr/mylisp/ast"
 )
 
 type Lexer struct {

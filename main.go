@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/dyzsr/mylisp/compiletime"
 	"github.com/dyzsr/mylisp/parser"
@@ -11,7 +13,14 @@ import (
 )
 
 func main() {
-	// println("start")
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT)
+	go func() {
+		for {
+			sig := <-sigs
+			println("\n~", sig.String())
+		}
+	}()
 
 	lex := token.NewLexer(os.Stdin)
 	par := parser.NewParser(lex)
@@ -21,7 +30,6 @@ func main() {
 	eprt := repl.NewErrorPrinter()
 
 	for {
-		// println("parse")
 		expr, ok := par.Next()
 		if !ok {
 			err := par.Err()
@@ -32,17 +40,14 @@ func main() {
 			continue
 		}
 
-		// println("compile time")
 		expr, err := ct.Eval(expr)
 		if err != nil {
 			eprt.Print(err)
 			continue
 		}
 
-		// println("runtime")
 		result, err := rt.Eval(expr)
 
-		// println("print")
 		if err != nil {
 			eprt.Print(err)
 		} else {

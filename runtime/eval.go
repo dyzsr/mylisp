@@ -138,7 +138,7 @@ func (r *Runtime) evalDefineExpr(scope *ast.Scope, defineExpr *ast.DefineExpr) (
 	if proc, ok := value.(*Proc); ok && proc.name == nil {
 		proc.name = defineExpr.Ident.Name
 	}
-	return nil, nil
+	return Nil{}, nil
 }
 
 func (r *Runtime) evalSetExpr(scope *ast.Scope, setExpr *ast.SetExpr) (Value, error) {
@@ -152,7 +152,7 @@ func (r *Runtime) evalSetExpr(scope *ast.Scope, setExpr *ast.SetExpr) (Value, er
 	if proc, ok := value.(*Proc); ok && proc.name == nil {
 		proc.name = setExpr.Ident.Name
 	}
-	return nil, nil
+	return Nil{}, nil
 }
 
 func (r *Runtime) evalLambdaExpr(scope *ast.Scope, lambdaExpr *ast.LambdaExpr) (Value, error) {
@@ -181,7 +181,7 @@ func (r *Runtime) evalCondExpr(scope *ast.Scope, condExpr *ast.CondExpr) (Value,
 		inner := ast.NewScope(scope)
 		return r.evalScope(inner, false, branch.Body)
 	}
-	return nil, nil
+	return Nil{}, nil
 }
 
 func (r *Runtime) evalBuiltinProc(op *BuiltinProc, operands ...Value) (value Value, err error) {
@@ -198,7 +198,7 @@ func (r *Runtime) evalProc(proc *Proc, operands ...Value) (Value, error) {
 		}
 
 		if len(proc.Args) != len(operands) {
-			return nil, arityMismatchErr
+			return nil, errArityMismatch
 		}
 		scope := ast.NewScope(proc.outer)
 		for i, arg := range proc.Args {

@@ -18,11 +18,6 @@ func NewParser(l *token.Lexer) *Parser {
 	}
 }
 
-func (p *Parser) SetLexer(l *token.Lexer) {
-	p.lexer = l
-	p.err = nil
-}
-
 func (p *Parser) Err() error {
 	return p.err
 }
